@@ -18,19 +18,71 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
     <style>
-        /* CSS مخصص لتكامل أفضل */
+        /* --- CSS مخصص لتكامل أفضل وتفاعلية محسنة --- */
+        html {
+            scroll-behavior: smooth;
+        }
         body {
             font-family: 'Cairo', sans-serif;
-            background-color: #181818;
-            background-image:
-                linear-gradient(315deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 50%),
-                linear-gradient(225deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 50%),
-                linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 50%),
-                linear-gradient(45deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 50%);
-            background-size: 60px 60px;
+            background-color: #121212;
             color: #e5e5e5;
             overflow-x: hidden;
+            /* --- تعديل: إزالة مؤشر الفأرة الافتراضي --- */
+            cursor: none; 
         }
+
+        /* --- جديد: شاشة التحميل --- */
+        #loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #121212;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            transition: opacity 0.5s ease;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.2);
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* --- جديد: مؤشر فأرة مخصص --- */
+        .cursor {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #3b82f6;
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: width 0.2s, height 0.2s, background-color 0.2s;
+        }
+        .cursor-dot {
+            width: 4px;
+            height: 4px;
+            background-color: #3b82f6;
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+        }
+        body:hover .cursor {
+            opacity: 1;
+        }
+
         #interactive-canvas {
             position: fixed;
             top: 0;
@@ -39,14 +91,13 @@
             z-index: 0;
         }
         
-        /* --- تعديل: إضافة خلفية مميزة لقسم الـ Hero --- */
         #hero {
             position: relative;
             background-image: url('https://images.unsplash.com/photo-1531297484001-80022131f5a1?q=80&w=1740&auto=format&fit=crop');
             background-size: cover;
             background-position: center;
+            background-attachment: fixed; /* تأثير Parallax بسيط */
         }
-        /* طبقة تعتيم لضمان قراءة النص */
         #hero::before {
             content: '';
             position: absolute;
@@ -54,10 +105,9 @@
             right: 0;
             bottom: 0;
             left: 0;
-            background-color: rgba(10, 10, 10, 0.7);
+            background: linear-gradient(to top, rgba(18, 18, 18, 1), rgba(18, 18, 18, 0.6));
             z-index: 1;
         }
-        /* التأكد من أن محتوى الـ Hero فوق طبقة التعتيم */
         #hero .relative {
             z-index: 2;
         }
@@ -65,15 +115,18 @@
         .content-section {
             position: relative;
             z-index: 1;
-            background: rgba(18, 18, 18, 0.85);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+            background: #121212;
         }
         .glass-card {
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
         #tooltip {
             position: fixed;
@@ -95,9 +148,51 @@
             transform: translateY(-4px);
             box-shadow: 0 8px 25px rgba(96, 165, 250, 0.3);
         }
+        /* --- جديد: تأثيرات ظهور عند التمرير --- */
+        .fade-in-section {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .fade-in-section.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        /* --- جديد: زر العودة للأعلى --- */
+        #scroll-to-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background-color: #3b82f6;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(100px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        #scroll-to-top.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-gray-200">
+    
+    <!-- جديد: شاشة التحميل -->
+    <div id="loader">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- جديد: مؤشر الفأرة المخصص -->
+    <div class="cursor"></div>
+    <div class="cursor-dot"></div>
 
     <!-- Canvas للرسومات التفاعلية -->
     <canvas id="interactive-canvas"></canvas>
@@ -121,7 +216,6 @@
                 </svg>
             </button>
         </div>
-        <!-- Mobile Menu -->
         <div id="mobile-menu" class="hidden md:hidden flex-col items-center py-4 bg-gray-800/90">
              <a href="#hero" class="block py-2 hover:text-blue-400 transition-colors">الرئيسية</a>
              <a href="#about" class="block py-2 hover:text-blue-400 transition-colors">عن الشركة</a>
@@ -132,7 +226,6 @@
 
     <!-- Main Content -->
     <main>
-        <!-- Hero Section -->
         <section id="hero" class="h-screen flex items-center justify-center text-center">
             <div class="relative z-10 px-4">
                 <h2 class="text-5xl md:text-7xl font-extrabold text-white leading-tight mb-4 animate-fade-in-down">
@@ -147,9 +240,8 @@
             </div>
         </section>
 
-        <!-- About Me Section -->
-        <section id="about" class="py-20 md:py-32 content-section">
-            <div class="container mx-auto px-6">
+        <section id="about" class="py-20 md:py-32 content-section fade-in-section">
+             <div class="container mx-auto px-6">
                 <div class="text-center mb-12">
                     <h2 class="text-4xl font-bold text-white">عن CreavateX</h2>
                     <div class="w-24 h-1 bg-blue-500 mx-auto mt-4 rounded"></div>
@@ -180,13 +272,18 @@
             </div>
         </section>
 
-        <!-- Projects Section -->
-        <section id="projects" class="py-20 md:py-32 content-section">
+        <section id="projects" class="py-20 md:py-32 content-section fade-in-section">
             <div class="container mx-auto px-6">
-                <div class="text-center mb-12">
+                <div class="text-center mb-16">
                     <h2 class="text-4xl font-bold text-white">المشاريع المميزة</h2>
-                     <p class="text-gray-400 mt-2">انقر على البطاقات أدناه أو تفاعل مع المجسمات في الخلفية.</p>
                     <div class="w-24 h-1 bg-blue-500 mx-auto mt-4 rounded"></div>
+                    <!-- جديد: أزرار فلترة المشاريع -->
+                    <div id="project-filters" class="flex justify-center flex-wrap gap-4 mt-8">
+                        <button class="filter-btn active" data-filter="all">الكل</button>
+                        <button class="filter-btn" data-filter="app">تطبيقات ويب</button>
+                        <button class="filter-btn" data-filter="e-commerce">تجارة إلكترونية</button>
+                        <button class="filter-btn" data-filter="game">ألعاب</button>
+                    </div>
                 </div>
                 <div id="projects-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     <!-- سيتم ملء بطاقات المشاريع هنا بواسطة JavaScript -->
@@ -194,9 +291,8 @@
             </div>
         </section>
 
-        <!-- Contact Section -->
-        <section id="contact" class="py-20 md:py-32 content-section">
-            <div class="container mx-auto px-6">
+        <section id="contact" class="py-20 md:py-32 content-section fade-in-section">
+             <div class="container mx-auto px-6">
                  <div class="text-center mb-12">
                     <h2 class="text-4xl font-bold text-white">تواصل معنا</h2>
                     <div class="w-24 h-1 bg-blue-500 mx-auto mt-4 rounded"></div>
@@ -222,6 +318,13 @@
         </section>
     </main>
 
+    <!-- جديد: زر العودة للأعلى -->
+    <a id="scroll-to-top" href="#hero">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+        </svg>
+    </a>
+    
     <!-- Footer -->
     <footer class="content-section py-8">
         <div class="container mx-auto px-6 text-center text-gray-400">
@@ -232,6 +335,12 @@
 
     <script>
     // --- إعدادات أساسية ---
+    const loader = document.getElementById('loader');
+    window.addEventListener('load', () => {
+        loader.style.opacity = '0';
+        setTimeout(() => loader.style.display = 'none', 500);
+    });
+
     const canvas = document.getElementById('interactive-canvas');
     const tooltip = document.getElementById('tooltip');
     const projectsGrid = document.getElementById('projects-grid');
@@ -240,58 +349,67 @@
     const mobileMenu = document.getElementById('mobile-menu');
     document.getElementById('year').textContent = new Date().getFullYear();
 
-    // --- بيانات المشاريع (مع صور محدثة) ---
+    // --- بيانات المشاريع (مع فئات للفلترة) ---
     const projectsData = [
         {
             id: 1,
             title: 'منصة تجارة إلكترونية',
-            description: 'منصة متكاملة لعرض وبيع المنتجات عبر الإنترنت مع لوحة تحكم لإدارة المخزون والطلبات.',
+            category: 'e-commerce',
+            description: 'منصة متكاملة لعرض وبيع المنتجات عبر الإنترنت مع لوحة تحكم.',
             url: 'https://example.com/project-one',
             imageUrl: 'https://images.unsplash.com/photo-1557821552-17105176677c?q=80&w=1932&auto=format&fit=crop'
         },
         {
             id: 2,
             title: 'نظام إدارة محتوى',
-            description: 'نظام مرن لإنشاء وإدارة المحتوى الرقمي للمدونات والمواقع الإخبارية.',
+            category: 'app',
+            description: 'نظام مرن لإنشاء وإدارة المحتوى الرقمي للمدونات والمواقع.',
             url: 'https://example.com/project-two',
             imageUrl: 'https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?q=80&w=1740&auto=format&fit=crop'
         },
         {
             id: 3,
             title: 'تطبيق تتبع المهام',
-            description: 'تطبيق ويب يساعد على تنظيم المهام اليومية ومتابعة التقدم في المشاريع الشخصية والجماعية.',
+            category: 'app',
+            description: 'تطبيق ويب يساعد على تنظيم المهام اليومية ومتابعة التقدم.',
             url: 'https://example.com/project-three',
             imageUrl: 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=1740&auto=format&fit=crop'
         },
         {
             id: 4,
             title: 'موقع حجوزات فندقية',
-            description: 'منصة تتيح للمستخدمين البحث عن الفنادق وحجز الغرف بسهولة وأمان.',
+            category: 'e-commerce',
+            description: 'منصة تتيح للمستخدمين البحث عن الفنادق وحجز الغرف بسهولة.',
             url: 'https://example.com/project-four',
             imageUrl: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=1740&auto=format&fit=crop'
         },
         {
             id: 5,
-            title: 'مدونة تقنية شخصية',
-            description: 'مدونة شخصية بتصميم عصري لعرض المقالات والأفكار حول أحدث التقنيات.',
+            title: 'لعبة ويب تفاعلية',
+            category: 'game',
+            description: 'لعبة ألغاز مبنية على الويب باستخدام HTML5 Canvas وJavaScript.',
             url: 'https://example.com/project-five',
-            imageUrl: 'https://images.unsplash.com/photo-1550439062-609e1531270e?q=80&w=1635&auto=format&fit=crop'
+            imageUrl: 'https://images.unsplash.com/photo-1593305842334-ce82d43a6933?q=80&w=1740&auto=format&fit=crop'
         },
         {
             id: 6,
-            title: 'لعبة ويب تفاعلية',
-            description: 'لعبة ألغاز مبنية على الويب باستخدام HTML5 Canvas وJavaScript.',
+            title: 'تطبيق ويب للطقس',
+            category: 'app',
+            description: 'تطبيق بسيط وجذاب يعرض حالة الطقس في أي مدينة بالعالم.',
             url: 'https://example.com/project-six',
             imageUrl: 'https://mmos.com/wp-content/gallery/naruto-online-overview/naruto-online-combat.jpg'
         }
     ];
 
-    // --- عرض بطاقات المشاريع ---
-    function renderProjectCards() {
+    // --- عرض وفلترة بطاقات المشاريع ---
+    function renderProjectCards(filter = 'all') {
         projectsGrid.innerHTML = '';
-        projectsData.forEach(project => {
+        const filteredProjects = projectsData.filter(p => filter === 'all' || p.category === filter);
+        
+        filteredProjects.forEach(project => {
             const card = document.createElement('div');
-            card.className = 'glass-card rounded-lg overflow-hidden shadow-lg transform transition-all duration-300 hover:-translate-y-2 hover:shadow-blue-500/30';
+            card.className = 'glass-card project-card rounded-lg overflow-hidden shadow-lg';
+            card.dataset.projectId = project.id; // لربط البطاقة بالمجسم
             card.innerHTML = `
                 <a href="${project.url}" target="_blank" rel="noopener noreferrer">
                     <img src="${project.imageUrl}" alt="${project.title}" class="w-full h-48 object-cover">
@@ -304,6 +422,18 @@
             projectsGrid.appendChild(card);
         });
     }
+
+    const filterContainer = document.getElementById('project-filters');
+    filterContainer.addEventListener('click', (e) => {
+        if (e.target.classList.contains('filter-btn')) {
+            filterContainer.querySelector('.active').classList.remove('active');
+            e.target.classList.add('active');
+            const filterValue = e.target.dataset.filter;
+            renderProjectCards(filterValue);
+            filterThreeJSObjects(filterValue);
+        }
+    });
+
     renderProjectCards();
     
     // --- إعداد مشهد Three.js ---
@@ -314,43 +444,34 @@
 
     function initThreeJS() {
         scene = new THREE.Scene();
-        scene.fog = new THREE.FogExp2(0x0a0a0a, 0.035);
+        scene.fog = new THREE.FogExp2(0x121212, 0.035);
         camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         camera.position.z = 30;
-        renderer = new THREE.WebGLRenderer({
-            canvas: canvas,
-            antialias: true,
-            alpha: true
-        });
+        renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(window.devicePixelRatio);
         controls = new THREE.OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-        controls.dampingFactor = 0.05;
-        controls.enableZoom = true;
-        controls.enablePan = false;
-        controls.minDistance = 15;
-        controls.maxDistance = 60;
-        controls.autoRotate = true;
-        controls.autoRotateSpeed = 0.3;
+        Object.assign(controls, {
+            enableDamping: true, dampingFactor: 0.05, enableZoom: true, 
+            enablePan: false, minDistance: 15, maxDistance: 60, 
+            autoRotate: true, autoRotateSpeed: 0.3
+        });
         
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
         scene.add(ambientLight);
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
         directionalLight.position.set(5, 10, 7.5);
         scene.add(directionalLight);
-        const pointLight1 = new THREE.PointLight(0x3b82f6, 1.5, 100);
+        const pointLight1 = new THREE.PointLight(0x3b82f6, 2, 100);
         pointLight1.position.set(-15, 10, 10);
         scene.add(pointLight1);
-        const pointLight2 = new THREE.PointLight(0xec4899, 1.5, 100);
-        pointLight2.position.set(15, -10, -10);
-        scene.add(pointLight2);
-
+        
         const geometries = [
             new THREE.IcosahedronGeometry(2, 0), new THREE.TorusKnotGeometry(1.8, 0.6, 100, 16),
             new THREE.OctahedronGeometry(2.2, 0), new THREE.DodecahedronGeometry(2.1, 0),
             new THREE.TorusGeometry(2, 0.5, 16, 100), new THREE.CapsuleGeometry(1.5, 1, 4, 16)
         ];
+
         projectsData.forEach((project, index) => {
             const material = new THREE.MeshStandardMaterial({
                 color: 0xffffff, metalness: 0.7, roughness: 0.3,
@@ -362,10 +483,11 @@
             const theta = Math.sqrt(projectsData.length * Math.PI) * phi;
             mesh.position.setFromSphericalCoords(15, phi, theta);
             mesh.userData = project;
+            mesh.originalPosition = mesh.position.clone();
             scene.add(mesh);
             projectMeshes.push(mesh);
         });
-        
+
         raycaster = new THREE.Raycaster();
         mouse = new THREE.Vector2();
         window.addEventListener('resize', onWindowResize, false);
@@ -373,19 +495,27 @@
         window.addEventListener('click', onMouseClick, false);
     }
 
-    // --- حلقة الرسوم المتحركة ---
+    // جديد: دالة لفلترة مجسمات Three.js
+    function filterThreeJSObjects(filter) {
+        projectMeshes.forEach(mesh => {
+            const isVisible = (filter === 'all' || mesh.userData.category === filter);
+            mesh.visible = isVisible;
+        });
+    }
+
     function animate() {
         requestAnimationFrame(animate);
         controls.update();
         projectMeshes.forEach(mesh => {
-            mesh.rotation.x += 0.001;
-            mesh.rotation.y += 0.002;
+            if (mesh !== INTERSECTED) {
+                mesh.rotation.x += 0.001;
+                mesh.rotation.y += 0.002;
+            }
         });
         updateInteraction();
         renderer.render(scene, camera);
     }
 
-    // --- دوال مساعدة ---
     function onWindowResize() {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
@@ -407,32 +537,92 @@
 
     function updateInteraction() {
         raycaster.setFromCamera(mouse, camera);
-        const intersects = raycaster.intersectObjects(projectMeshes);
+        const intersects = raycaster.intersectObjects(projectMeshes.filter(m => m.visible));
+
         if (intersects.length > 0) {
             if (INTERSECTED != intersects[0].object) {
-                if (INTERSECTED) {
-                    INTERSECTED.material.emissive.setHex(0x000000);
-                    INTERSECTED.scale.set(1, 1, 1);
-                }
+                resetIntersected();
                 INTERSECTED = intersects[0].object;
                 INTERSECTED.material.emissive.setHex(0x555555);
                 INTERSECTED.scale.set(1.2, 1.2, 1.2);
                 tooltip.style.display = 'block';
                 tooltip.textContent = INTERSECTED.userData.title;
             }
-             document.body.style.cursor = 'pointer';
         } else {
-            if (INTERSECTED) {
-                INTERSECTED.material.emissive.setHex(0x000000);
-                INTERSECTED.scale.set(1, 1, 1);
-            }
-            INTERSECTED = null;
-            tooltip.style.display = 'none';
-            document.body.style.cursor = 'default';
+            resetIntersected();
         }
     }
     
-    // --- منطق واجهة المستخدم ---
+    function resetIntersected() {
+        if (INTERSECTED) {
+            INTERSECTED.material.emissive.setHex(0x000000);
+            INTERSECTED.scale.set(1, 1, 1);
+        }
+        INTERSECTED = null;
+        tooltip.style.display = 'none';
+    }
+
+    // --- منطق واجهة المستخدم الإضافي ---
+    // (يتبع في الجزء التالي)
+    </script>
+    <script>
+    // --- منطق واجهة المستخدم (تكملة) ---
+    const cursor = document.querySelector('.cursor');
+    const cursorDot = document.querySelector('.cursor-dot');
+    const scrollToTopBtn = document.getElementById('scroll-to-top');
+
+    // حركة مؤشر الفأرة
+    window.addEventListener('mousemove', e => {
+        cursor.style.left = e.clientX + 'px';
+        cursor.style.top = e.clientY + 'px';
+        cursorDot.style.left = e.clientX + 'px';
+        cursorDot.style.top = e.clientY + 'px';
+    });
+
+    document.querySelectorAll('a, button, .project-card').forEach(el => {
+        el.addEventListener('mouseenter', () => cursor.style.transform = 'translate(-50%, -50%) scale(1.5)');
+        el.addEventListener('mouseleave', () => cursor.style.transform = 'translate(-50%, -50%) scale(1)');
+    });
+
+    // إظهار وإخفاء زر العودة للأعلى
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 300) {
+            scrollToTopBtn.classList.add('visible');
+        } else {
+            scrollToTopBtn.classList.remove('visible');
+        }
+    });
+
+    // تأثير ظهور الأقسام عند التمرير
+    const sections = document.querySelectorAll('.fade-in-section');
+    const sectionObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1 });
+    sections.forEach(section => sectionObserver.observe(section));
+    
+    // ربط بطاقات المشاريع بالمجسمات ثلاثية الأبعاد
+    document.getElementById('projects-grid').addEventListener('mouseover', e => {
+        const card = e.target.closest('.project-card');
+        if (card) {
+            const projectId = parseInt(card.dataset.projectId);
+            const targetMesh = projectMeshes.find(m => m.userData.id === projectId);
+            if (targetMesh && targetMesh.visible) {
+                 if (INTERSECTED != targetMesh) {
+                    resetIntersected();
+                    INTERSECTED = targetMesh;
+                    INTERSECTED.material.emissive.setHex(0x555555);
+                    INTERSECTED.scale.set(1.2, 1.2, 1.2);
+                 }
+            }
+        }
+    });
+
+    // قائمة الموبايل
     menuBtn.addEventListener('click', () => {
         mobileMenu.classList.toggle('hidden');
         mobileMenu.classList.toggle('flex');
@@ -446,23 +636,11 @@
             }
         });
     });
-
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            document.querySelector(this.getAttribute('href')).scrollIntoView({
-                behavior: 'smooth'
-            });
-        });
-    });
     
-    // --- التعامل مع نموذج الاتصال لإرسال واتساب ---
+    // نموذج الاتصال
     contactForm.addEventListener('submit', function(e) {
         e.preventDefault();
-
-        // !! هام: استبدل هذا الرقم برقم الواتساب الخاص بك مع رمز الدولة وبدون علامة + أو أصفار في البداية
         const whatsappNumber = '9665XXXXXXXX'; 
-        
         const name = document.getElementById('name').value;
         const message = document.getElementById('message').value;
         const fullMessage = `*رسالة جديدة من الموقع:*\n\n*الاسم:* ${name}\n*الرسالة:* ${message}`;
@@ -475,7 +653,6 @@
     // --- بدء تشغيل كل شيء ---
     initThreeJS();
     animate();
-
     </script>
 </body>
 </html>
