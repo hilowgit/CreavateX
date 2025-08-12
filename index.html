@@ -3,708 +3,656 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نباتات ضد الزومبي - نسخة احترافية</title>
+    <title>معرض أعمال | CreavateX</title>
+    
+    <!-- Google Fonts: Cairo -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Three.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
     <style>
+        /* --- CSS مخصص لتكامل أفضل وتفاعلية محسنة --- */
+        html {
+            scroll-behavior: smooth;
+        }
         body {
             font-family: 'Cairo', sans-serif;
-            background-color: #3a2d21;
-            color: #fff;
-            overflow: hidden;
-            height: 100vh; /* Ensure body takes full viewport height */
+            background-color: #121212;
+            color: #e5e5e5;
+            overflow-x: hidden;
+            /* --- تعديل: إزالة مؤشر الفأرة الافتراضي --- */
+            cursor: none; 
         }
-        #gameCanvas {
-            background-color: #5a9c42;
-            cursor: pointer;
-            border-radius: 10px;
-            width: 100%;
-            height: 100%;
-            display: block;
-        }
-        .plant-card {
-            border: 3px solid #c2b280;
-            transition: all 0.2s ease-in-out;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-            position: relative;
-        }
-        .selected {
-            border-color: #f0e68c;
-            transform: scale(1.1);
-            box-shadow: 0 0 15px #f0e68c;
-        }
-        .plant-card:hover {
-            background-color: #6d8c54 !important;
-        }
-        .cooldown-overlay {
-            position: absolute;
+
+        /* --- جديد: شاشة التحميل --- */
+        #loader {
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.7);
+            background: #121212;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            transition: opacity 0.5s ease;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.2);
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* --- جديد: مؤشر فأرة مخصص --- */
+        .cursor {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #3b82f6;
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: width 0.2s, height 0.2s, background-color 0.2s;
+        }
+        .cursor-dot {
+            width: 4px;
+            height: 4px;
+            background-color: #3b82f6;
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+        }
+        body:hover .cursor {
+            opacity: 1;
+        }
+
+        #interactive-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            outline: none;
+            z-index: 0;
+        }
+        
+        #hero {
+            position: relative;
+            background-image: url('https://images.unsplash.com/photo-1531297484001-80022131f5a1?q=80&w=1740&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed; /* تأثير Parallax بسيط */
+        }
+        #hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            background: linear-gradient(to top, rgba(18, 18, 18, 1), rgba(18, 18, 18, 0.6));
+            z-index: 1;
+        }
+        #hero .relative {
+            z-index: 2;
+        }
+
+        .content-section {
+            position: relative;
+            z-index: 1;
+            background: #121212;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        #tooltip {
+            position: fixed;
+            display: none;
+            padding: 8px 16px;
+            background: rgba(22, 22, 22, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #fafafa;
+            pointer-events: none;
+            font-size: 14px;
+            z-index: 9999;
+            transition: opacity 0.2s ease-in-out;
+        }
+        .skill-badge {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .skill-badge:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(96, 165, 250, 0.3);
+        }
+        /* --- جديد: تأثيرات ظهور عند التمرير --- */
+        .fade-in-section {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .fade-in-section.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        /* --- جديد: زر العودة للأعلى --- */
+        #scroll-to-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background-color: #3b82f6;
             color: white;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
-            font-weight: bold;
-            border-radius: 6px;
-            pointer-events: none;
+            cursor: pointer;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(100px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
         }
-        .message-box {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(0,0,0,0.8);
-            padding: 30px 40px;
-            border-radius: 15px;
-            border: 3px solid #c2b280;
-            text-align: center;
-            z-index: 100;
-        }
-        .explosion {
-            position: absolute;
-            background-color: rgba(255, 165, 0, 0.7);
-            border-radius: 50%;
-            animation: explode 0.3s ease-out forwards;
-            pointer-events: none;
-        }
-        @keyframes explode {
-            from { transform: scale(0); opacity: 1; }
-            to { transform: scale(1); opacity: 0; }
-        }
-        .svg-defs {
-            position: absolute;
-            width: 0;
-            height: 0;
-            overflow: hidden;
+        #scroll-to-top.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
     </style>
 </head>
-<body class="flex flex-col items-center p-4">
-
-    <!-- واجهة المستخدم العلوية -->
-    <div id="ui-bar" class="w-full max-w-7xl bg-[#4a3a2a] p-2 rounded-lg shadow-lg mb-4 flex items-center justify-between flex-shrink-0">
-        <div id="plant-selector" class="flex gap-3">
-            <!-- البطاقات سيتم إنشاؤها بواسطة JavaScript -->
-        </div>
-        <div class="bg-black/50 p-4 rounded-lg flex items-center gap-3">
-             <span id="wave-display" class="text-2xl font-bold mr-4">الموجة: 1</span>
-            <span class="text-4xl text-yellow-300">☀️</span>
-            <span id="sun-display" class="text-4xl font-bold">50</span>
-        </div>
+<body class="bg-gray-900 text-gray-200">
+    
+    <!-- جديد: شاشة التحميل -->
+    <div id="loader">
+        <div class="spinner"></div>
     </div>
 
-    <div id="game-container" class="relative w-full max-w-7xl flex-grow">
-        <canvas id="gameCanvas"></canvas>
-        <div id="message-box" class="message-box hidden">
-            <h2 id="message-title" class="text-3xl font-bold mb-4"></h2>
-            <button id="restart-button" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg text-xl">
-                ابدأ الموجة التالية
+    <!-- جديد: مؤشر الفأرة المخصص -->
+    <div class="cursor"></div>
+    <div class="cursor-dot"></div>
+
+    <!-- Canvas للرسومات التفاعلية -->
+    <canvas id="interactive-canvas"></canvas>
+
+    <!-- تلميح يظهر عند التحويم -->
+    <div id="tooltip"></div>
+
+    <!-- Header -->
+    <header class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 glass-card">
+        <div class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <img src="CreaVateX_Logobw.png" alt="شعار CreavateX" class="h-12 w-auto">
+            <nav class="hidden md:flex space-x-8 space-x-reverse">
+                <a href="#hero" class="hover:text-blue-400 transition-colors">الرئيسية</a>
+                <a href="#about" class="hover:text-blue-400 transition-colors">عن الشركة</a>
+                <a href="#projects" class="hover:text-blue-400 transition-colors">المشاريع</a>
+                <a href="#contact" class="hover:text-blue-400 transition-colors">تواصل معنا</a>
+            </nav>
+            <button id="menu-btn" class="md:hidden z-50">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                </svg>
             </button>
         </div>
-    </div>
+        <div id="mobile-menu" class="hidden md:hidden flex-col items-center py-4 bg-gray-800/90">
+             <a href="#hero" class="block py-2 hover:text-blue-400 transition-colors">الرئيسية</a>
+             <a href="#about" class="block py-2 hover:text-blue-400 transition-colors">عن الشركة</a>
+             <a href="#projects" class="block py-2 hover:text-blue-400 transition-colors">المشاريع</a>
+             <a href="#contact" class="block py-2 hover:text-blue-400 transition-colors">تواصل معنا</a>
+        </div>
+    </header>
 
-    <div class="svg-defs">
-        <!-- SVG Assets -->
-        <div id="peashooter-svg"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="pea-head-gloss" cx="0.4" cy="0.4" r="0.6"><stop offset="0%" stop-color="#c8e6c9"/><stop offset="100%" stop-color="#66bb6a"/></radialGradient><radialGradient id="pea-snout-gloss" cx="0.4" cy="0.4" r="0.6"><stop offset="0%" stop-color="#a5d6a7"/><stop offset="100%" stop-color="#4caf50"/></radialGradient></defs><path d="M50,95 C45,85 55,85 50,95 L48,70 H52Z" fill="#558b2f"/><path d="M35,85 C25,80 35,70 48,70" fill="none" stroke="#558b2f" stroke-width="4" stroke-linecap="round"/><path d="M65,85 C75,80 65,70 52,70" fill="none" stroke="#558b2f" stroke-width="4" stroke-linecap="round"/><circle cx="45" cy="45" r="35" fill="url(#pea-head-gloss)" stroke="#388e3c" stroke-width="2"/><circle cx="80" cy="45" r="18" fill="url(#pea-snout-gloss)" stroke="#2e7d32" stroke-width="2"/><circle cx="80" cy="45" r="12" fill="#1b5e20"/><path d="M40,20 C30,10 20,20 30,30" fill="#66bb6a" stroke="#388e3c" stroke-width="2"/><ellipse cx="40" cy="35" rx="7" ry="10" fill="black"/><ellipse cx="55" cy="35" rx="7" ry="10" fill="black"/><circle cx="42" cy="32" r="3" fill="white"/><circle cx="57" cy="32" r="3" fill="white"/></svg></div>
-        <div id="sunflower-svg"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="sunflower-face" cx="0.5" cy="0.4" r="0.6"><stop offset="0%" stop-color="#fbc02d"/><stop offset="100%" stop-color="#8d6e63"/></radialGradient></defs><path d="M50,95 C45,85 55,85 50,95 L48,70 H52Z" fill="#558b2f"/><path d="M25,85 C15,75 30,65 48,70" fill="#66bb6a" stroke="#388e3c" stroke-width="2"/><path d="M75,85 C85,75 70,65 52,70" fill="#66bb6a" stroke="#388e3c" stroke-width="2"/><g transform="translate(50,50)"><path d="M0 -48 A 30 30 0 0 1 0 48 A 30 30 0 0 1 0 -48" fill="#ffb300" stroke="#f57f17" stroke-width="2"/><path d="M0 -48 A 30 30 0 0 1 0 48 A 30 30 0 0 1 0 -48" transform="rotate(22.5)" fill="#ffca28" stroke="#f57f17" stroke-width="2"/><path d="M0 -48 A 30 30 0 0 1 0 48 A 30 30 0 0 1 0 -48" transform="rotate(45)" fill="#ffb300" stroke="#f57f17" stroke-width="2"/><path d="M0 -48 A 30 30 0 0 1 0 48 A 30 30 0 0 1 0 -48" transform="rotate(67.5)" fill="#ffca28" stroke="#f57f17" stroke-width="2"/><path d="M0 -48 A 30 30 0 0 1 0 48 A 30 30 0 0 1 0 -48" transform="rotate(90)" fill="#ffb300" stroke="#f57f17" stroke-width="2"/><path d="M0 -48 A 30 30 0 0 1 0 48 A 30 30 0 0 1 0 -48" transform="rotate(112.5)" fill="#ffca28" stroke="#f57f17" stroke-width="2"/><path d="M0 -48 A 30 30 0 0 1 0 48 A 30 30 0 0 1 0 -48" transform="rotate(135)" fill="#ffb300" stroke="#f57f17" stroke-width="2"/><path d="M0 -48 A 30 30 0 0 1 0 48 A 30 30 0 0 1 0 -48" transform="rotate(157.5)" fill="#ffca28" stroke="#f57f17" stroke-width="2"/></g><ellipse cx="50" cy="50" rx="30" ry="32" fill="url(#sunflower-face)" stroke="#4e342e" stroke-width="2"/><path d="M 35 62 A 15 10 0 0 0 65 62" stroke="black" stroke-width="3" fill="none" stroke-linecap="round"/><ellipse cx="40" cy="48" rx="4" ry="6" fill="black"/><ellipse cx="60" cy="48" rx="4" ry="6" fill="black"/></svg></div>
-        <div id="wallnut-svg"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M 85 60 A 35 35 0 0 1 15 60 A 35 35 0 0 1 35 40 C 50 20, 65 20, 80 40 A 35 35 0 0 1 85 60Z" fill="#8b563b" stroke="#543422" stroke-width="3"/><path d="M 80 60 A 30 30 0 0 1 20 60 A 30 30 0 0 1 40 45 C 50 30, 60 30, 75 45 A 30 30 0 0 1 80 60Z" fill="#a67c49"/><circle cx="42" cy="55" r="5" fill="black"/><circle cx="58" cy="55" r="5" fill="black"/><path d="M 40 70 A 10 10 0 0 0 60 70" stroke="black" stroke-width="3" fill="none"/></svg></div>
-        <div id="wallnut_damaged1-svg"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M 85 60 A 35 35 0 0 1 15 60 A 35 35 0 0 1 35 40 C 50 20, 65 20, 80 40 A 35 35 0 0 1 85 60Z" fill="#8b563b" stroke="#543422" stroke-width="3"/><path d="M 80 60 A 30 30 0 0 1 20 60 A 30 30 0 0 1 40 45 C 50 30, 60 30, 75 45 A 30 30 0 0 1 80 60Z" fill="#a67c49"/><circle cx="42" cy="55" r="5" fill="black"/><circle cx="58" cy="55" r="5" fill="black"/><path d="M 40 70 A 10 10 0 0 0 60 70" stroke="black" stroke-width="3" fill="none"/><path d="M 60 35 L 50 50 L 65 60" stroke="#543422" stroke-width="2" fill="none"/></svg></div>
-        <div id="wallnut_damaged2-svg"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M 85 60 A 35 35 0 0 1 15 60 A 35 35 0 0 1 35 40 C 50 20, 65 20, 80 40 A 35 35 0 0 1 85 60Z" fill="#8b563b" stroke="#543422" stroke-width="3"/><path d="M 80 60 A 30 30 0 0 1 20 60 A 30 30 0 0 1 40 45 C 50 30, 60 30, 75 45 A 30 30 0 0 1 80 60Z" fill="#a67c49"/><circle cx="42" cy="55" r="5" fill="black"/><circle cx="58" cy="55" r="5" fill="black"/><path d="M 40 70 A 10 10 0 0 0 60 70" stroke="black" stroke-width="3" fill="none"/><path d="M 60 35 L 50 50 L 65 60" stroke="#543422" stroke-width="2" fill="none"/><path d="M 30 50 L 45 65 L 35 80" stroke="#543422" stroke-width="2" fill="none"/></svg></div>
-        <div id="cherryBomb-svg"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="cherry-gradient" cx="0.3" cy="0.3"><stop offset="0%" stop-color="#ff7043"/><stop offset="100%" stop-color="#d84315"/></radialGradient></defs><path d="M50 20 C 60 10, 70 20, 65 25" stroke="#1b5e20" stroke-width="5" fill="none" stroke-linecap="round"/><circle cx="50" cy="60" r="35" fill="url(#cherry-gradient)" stroke="#bf360c" stroke-width="3"/><circle cx="40" cy="50" r="5" fill="white"/></svg></div>
-        <div id="zombie-normal-walk1-svg"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g transform="translate(15, 5)"><path d="M55,80 L50,95 H40 L45,80z" fill="#4a2e2a"/><path d="M25,80 L30,95 H20 L15,80z" fill="#2c3e50"/><path d="M20,80 L60,80 L55,45 L25,45 Z" fill="#795548"/><path d="M25,45 L55,45 L52,55 L28,55 Z" fill="#d7ccc8"/><path d="M40,55 L38,70 L48,70 L46,55 Z" fill="#c62828"/><path d="M40,60 L47,60 M39,65 L46,65" stroke="#e57373" stroke-width="1.5"/><path d="M60,40 C60,55 30,55 30,40 C30,25 60,25 60,40" fill="#7a9a7a" stroke="#5e795e" stroke-width="2"/><circle cx="38" cy="38" r="8" fill="white"/><circle cx="38" cy="38" r="3" fill="black"/><circle cx="52" cy="38" r="8" fill="white"/><circle cx="52" cy="38" r="3" fill="black"/><rect x="35" y="48" width="20" height="5" fill="#5e795e"/></g></svg></div>
-        <div id="zombie-normal-walk2-svg"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g transform="translate(15, 5)"><path d="M50,80 L55,95 H45 L40,80z" fill="#4a2e2a"/><path d="M30,80 L25,95 H15 L20,80z" fill="#2c3e50"/><path d="M20,80 L60,80 L55,45 L25,45 Z" fill="#795548"/><path d="M25,45 L55,45 L52,55 L28,55 Z" fill="#d7ccc8"/><path d="M40,55 L38,70 L48,70 L46,55 Z" fill="#c62828"/><path d="M40,60 L47,60 M39,65 L46,65" stroke="#e57373" stroke-width="1.5"/><path d="M60,42 C60,57 30,57 30,42 C30,27 60,27 60,42" fill="#7a9a7a" stroke="#5e795e" stroke-width="2"/><circle cx="38" cy="40" r="8" fill="white"/><circle cx="38" cy="40" r="3" fill="black"/><circle cx="52" cy="40" r="8" fill="white"/><circle cx="52" cy="40" r="3" fill="black"/><rect x="35" y="50" width="20" height="5" fill="#5e795e"/></g></svg></div>
-        <div id="zombie-buckethead-svg"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g id="buckethead-body"></g><path d="M 20 45 L 80 45 L 75 15 L 25 15 Z" fill="#A9A9A9" stroke="#696969" stroke-width="3"/></svg></div>
-        <div id="lawnmower-svg"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="mower-body" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#e53935"/><stop offset="100%" stop-color="#c62828"/></linearGradient><radialGradient id="wheel"><stop offset="0%" stop-color="#616161"/><stop offset="100%" stop-color="#212121"/></radialGradient></defs><rect x="5" y="30" width="90" height="55" fill="url(#mower-body)" rx="10" stroke="#8b0000" stroke-width="3"/><rect x="20" y="10" width="60" height="30" fill="#a9a9a9" rx="5" stroke="#696969" stroke-width="2"/><rect x="25" y="15" width="50" height="20" fill="#696969" rx="3"/><circle cx="25" cy="75" r="15" fill="url(#wheel)" stroke="black" stroke-width="3"/><circle cx="75" cy="75" r="15" fill="url(#wheel)" stroke="black" stroke-width="3"/><circle cx="25" cy="75" r="5" fill="#333"/><circle cx="75" cy="75" r="5" fill="#333"/><path d="M 5 50 H 95" stroke="#a11" stroke-width="4"/></svg></div>
-    </div>
+    <!-- Main Content -->
+    <main>
+        <section id="hero" class="h-screen flex items-center justify-center text-center">
+            <div class="relative z-10 px-4">
+                <h2 class="text-5xl md:text-7xl font-extrabold text-white leading-tight mb-4 animate-fade-in-down">
+                    بناء حلول رقمية مبتكرة
+                </h2>
+                <p class="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto mb-8 animate-fade-in-up">
+                    نحن في CreavateX نحول الأفكار المعقدة إلى تجارب مستخدم سلسة وجذابة. استكشف معرض أعمالنا التفاعلي.
+                </p>
+                <a href="#projects" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full transition-all duration-300 transform hover:scale-105">
+                    استكشف المشاريع
+                </a>
+            </div>
+        </section>
+
+        <section id="about" class="py-20 md:py-32 content-section fade-in-section">
+             <div class="container mx-auto px-6">
+                <div class="text-center mb-12">
+                    <h2 class="text-4xl font-bold text-white">عن CreavateX</h2>
+                    <div class="w-24 h-1 bg-blue-500 mx-auto mt-4 rounded"></div>
+                </div>
+                <div class="flex flex-col md:flex-row items-center gap-12">
+                    <div class="md:w-1/3 text-center">
+                        <img src="CreaVateX_Logobw.png" 
+                             alt="شعار شركة CreavateX" 
+                             class="max-w-xs mx-auto p-4">
+                    </div>
+                    <div class="md:w-2/3">
+                        <p class="text-lg text-gray-300 mb-6 leading-relaxed">
+                            CreavateX هي شركة تطوير ويب شغوفة تتمتع بخبرة واسعة في بناء تطبيقات الويب الحديثة والفعالة. نؤمن بأن أفضل المنتجات الرقمية هي تلك التي تجمع بين التصميم الجميل، والأداء العالي، وتجربة المستخدم البديهية. نبحث دائمًا عن تحديات جديدة لتوظيف مهاراتنا في حل المشكلات وابتكار حلول تقنية فريدة لعملائنا.
+                        </p>
+                        <h3 class="text-2xl font-bold text-white mb-4">المهارات التقنية</h3>
+                        <div class="flex flex-wrap gap-3">
+                            <span class="skill-badge bg-gray-700 text-blue-300 py-2 px-4 rounded-full font-semibold">JavaScript (ES6+)</span>
+                            <span class="skill-badge bg-gray-700 text-blue-300 py-2 px-4 rounded-full font-semibold">React.js</span>
+                            <span class="skill-badge bg-gray-700 text-blue-300 py-2 px-4 rounded-full font-semibold">Node.js</span>
+                            <span class="skill-badge bg-gray-700 text-blue-300 py-2 px-4 rounded-full font-semibold">Three.js</span>
+                            <span class="skill-badge bg-gray-700 text-blue-300 py-2 px-4 rounded-full font-semibold">Tailwind CSS</span>
+                            <span class="skill-badge bg-gray-700 text-blue-300 py-2 px-4 rounded-full font-semibold">HTML5 & CSS3</span>
+                             <span class="skill-badge bg-gray-700 text-blue-300 py-2 px-4 rounded-full font-semibold">Python</span>
+                            <span class="skill-badge bg-gray-700 text-blue-300 py-2 px-4 rounded-full font-semibold">SQL & NoSQL</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="projects" class="py-20 md:py-32 content-section fade-in-section">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-16">
+                    <h2 class="text-4xl font-bold text-white">المشاريع المميزة</h2>
+                    <div class="w-24 h-1 bg-blue-500 mx-auto mt-4 rounded"></div>
+                    <!-- جديد: أزرار فلترة المشاريع -->
+                    <div id="project-filters" class="flex justify-center flex-wrap gap-4 mt-8">
+                        <button class="filter-btn active" data-filter="all">الكل</button>
+                        <button class="filter-btn" data-filter="app">تطبيقات ويب</button>
+                        <button class="filter-btn" data-filter="e-commerce">تجارة إلكترونية</button>
+                        <button class="filter-btn" data-filter="game">ألعاب</button>
+                    </div>
+                </div>
+                <div id="projects-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- سيتم ملء بطاقات المشاريع هنا بواسطة JavaScript -->
+                </div>
+            </div>
+        </section>
+
+        <section id="contact" class="py-20 md:py-32 content-section fade-in-section">
+             <div class="container mx-auto px-6">
+                 <div class="text-center mb-12">
+                    <h2 class="text-4xl font-bold text-white">تواصل معنا</h2>
+                    <div class="w-24 h-1 bg-blue-500 mx-auto mt-4 rounded"></div>
+                </div>
+                <div class="max-w-2xl mx-auto glass-card p-8 rounded-xl">
+                    <form id="contact-form">
+                        <div class="mb-6">
+                            <label for="name" class="block mb-2 text-sm font-medium text-gray-300">الاسم</label>
+                            <input type="text" id="name" name="name" class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="اسمك الكامل" required>
+                        </div>
+                        <div class="mb-6">
+                            <label for="message" class="block mb-2 text-sm font-medium text-gray-300">رسالتك</label>
+                            <textarea id="message" name="message" rows="4" class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="اكتب رسالتك هنا..." required></textarea>
+                        </div>
+                        <div class="text-center">
+                            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-full transition-all duration-300 transform hover:scale-105">
+                                إرسال عبر واتساب
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- جديد: زر العودة للأعلى -->
+    <a id="scroll-to-top" href="#hero">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+        </svg>
+    </a>
+    
+    <!-- Footer -->
+    <footer class="content-section py-8">
+        <div class="container mx-auto px-6 text-center text-gray-400">
+            <p>&copy; <span id="year"></span> | جميع الحقوق محفوظة لـ <span class="font-bold">CreavateX</span>.</p>
+            <p>تطوير وإبداع بواسطة CreavateX</p>
+        </div>
+    </footer>
 
     <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        const gameContainer = document.getElementById('game-container');
-        const sunDisplay = document.getElementById('sun-display');
-        const waveDisplay = document.getElementById('wave-display');
-        const messageBox = document.getElementById('message-box');
-        const messageTitle = document.getElementById('message-title');
-        const restartButton = document.getElementById('restart-button');
-        const plantSelector = document.getElementById('plant-selector');
+    // --- إعدادات أساسية ---
+    const loader = document.getElementById('loader');
+    window.addEventListener('load', () => {
+        loader.style.opacity = '0';
+        setTimeout(() => loader.style.display = 'none', 500);
+    });
 
-        let canvasWidth, canvasHeight;
-        let cellSize = 100;
-        const grid = [], zombies = [], projectiles = [], suns = [], particles = [], lawnmowers = [], clouds = [];
-        let sunAmount = 150, selectedPlant = null, frame = 0, gameOver = false;
-        let currentWaveIndex = 0, waveZombiesSpawned = 0, waveInProgress = false;
-        let zombiesKilledInWave = [], waveSpawnTimer = 0;
-        let mousePos = { x: -1, y: -1 };
-        let animationFrameId;
+    const canvas = document.getElementById('interactive-canvas');
+    const tooltip = document.getElementById('tooltip');
+    const projectsGrid = document.getElementById('projects-grid');
+    const contactForm = document.getElementById('contact-form');
+    const menuBtn = document.getElementById('menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    document.getElementById('year').textContent = new Date().getFullYear();
 
-        const assets = {};
-        function loadAssets() {
-            const assetIds = [
-                'peashooter-svg', 'sunflower-svg', 'wallnut-svg', 'wallnut_damaged1-svg', 'wallnut_damaged2-svg', 'cherryBomb-svg',
-                'zombie-normal-walk1-svg', 'zombie-normal-walk2-svg', 'zombie-buckethead-svg',
-                'lawnmower-svg'
-            ];
-            const body1 = document.getElementById('zombie-normal-walk1-svg').innerHTML;
-            const bucketheadSvg = document.getElementById('zombie-buckethead-svg');
-            bucketheadSvg.querySelector('#buckethead-body').innerHTML = body1;
-
-            assetIds.forEach(id => {
-                const svgElement = document.getElementById(id).firstElementChild;
-                const svgString = new XMLSerializer().serializeToString(svgElement);
-                const img = new Image();
-                img.src = "data:image/svg+xml;base64," + window.btoa(svgString);
-                assets[id.replace('-svg', '')] = img;
-            });
+    // --- بيانات المشاريع (مع فئات للفلترة) ---
+    const projectsData = [
+        {
+            id: 1,
+            title: 'منصة تجارة إلكترونية',
+            category: 'e-commerce',
+            description: 'منصة متكاملة لعرض وبيع المنتجات عبر الإنترنت مع لوحة تحكم.',
+            url: 'https://example.com/project-one',
+            imageUrl: 'https://images.unsplash.com/photo-1557821552-17105176677c?q=80&w=1932&auto=format&fit=crop'
+        },
+        {
+            id: 2,
+            title: 'تطبيق بيع أجهزة منزلية',
+            category: 'app',
+            description: 'تطبيق مرن ومتطور لبيع المنتجات المنزلية بطريقة تسويقية عصرية وسهلة لزيادة المبيعات.',
+            url: 'https://electricdevises.netlify.app/',
+            imageUrl: 'https://www.ashrafsbahrain.com/media/magefan_blog/Top_8_Kitchen_Appliances_for_Your_Home_1.jpg'
+        },
+        {
+            id: 3,
+            title: 'تطبيق إعلاني للمدرسين',
+            category: 'app',
+            description: 'تطبيق ويب يبين قوة المدرب أو الأستاذ بطريقة جذابة حديثة.',
+            url: 'https://missrola.netlify.app/',
+            imageUrl: 'https://boldscience.org/wp-content/uploads/2023/12/shutterstock_2183363749-scaled.jpg'
+        },
+        {
+            id: 4,
+            title: 'موقع حجوزات فندقية',
+            category: 'e-commerce',
+            description: 'منصة تتيح للمستخدمين البحث عن الفنادق وحجز الغرف بسهولة.',
+            url: 'https://example.com/project-four',
+            imageUrl: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=1740&auto=format&fit=crop'
+        },
+        {
+            id: 5,
+            title: 'لعبة ويب تفاعلية',
+            category: 'game',
+            description: 'لعبة ألغاز مبنية على الويب باستخدام HTML5 Canvas وJavaScript.',
+            url: 'https://example.com/project-five',
+            imageUrl: 'https://mmos.com/wp-content/gallery/naruto-online-overview/naruto-online-combat.jpg'
+        },
+        {
+            id: 6,
+            title: 'متجر لبيع السيارات',
+            category: 'app',
+            description: 'تطبيق بسيط وجذاب يعرض أنواع السيارات ويعرضهم بطريقة جذابة.',
+            url: 'https://carmarketone.netlify.app/',
+            imageUrl: 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
         }
+    ];
 
-        const plantTypes = {
-            peashooter: { name: 'قاذفة', cost: 100, health: 100, asset: 'peashooter', shootInterval: 120, cooldown: 300, lastUsed: -300 },
-            sunflower: { name: 'زهرة شمس', cost: 50, health: 80, asset: 'sunflower', productionInterval: 600, cooldown: 300, lastUsed: -300 },
-            wallnut: { name: 'جوزة', cost: 50, health: 1000, asset: 'wallnut', cooldown: 1200, lastUsed: -1200 },
-            cherryBomb: { name: 'لغم', cost: 150, health: 100, asset: 'cherryBomb', fuse: 90, explosionRadius: 1.5, damage: 500, cooldown: 2000, lastUsed: -2000 }
-        };
-
-        const zombieTypes = {
-            normal: { health: 100, speed: 0.4, asset: 'zombie-normal-walk', points: 10 },
-            buckethead: { health: 250, speed: 0.3, asset: 'zombie-buckethead', points: 25 },
-            fast: { health: 80, speed: 0.8, asset: 'zombie-normal-walk', points: 15 },
-            summoner: { health: 150, speed: 0.25, asset: 'zombie-normal-walk', points: 50, summonInterval: 400 }
-        };
+    // --- عرض وفلترة بطاقات المشاريع ---
+    function renderProjectCards(filter = 'all') {
+        projectsGrid.innerHTML = '';
+        const filteredProjects = projectsData.filter(p => filter === 'all' || p.category === filter);
         
-        const waves = [
-            { zombies: [{ type: 'normal', count: 5 }], interval: 500 },
-            { zombies: [{ type: 'normal', count: 7 }, { type: 'buckethead', count: 1 }], interval: 450 },
-            { zombies: [{ type: 'normal', count: 5 }, { type: 'fast', count: 3 }], interval: 400 },
-            { zombies: [{ type: 'buckethead', count: 3 }, { type: 'fast', count: 2 }], interval: 400 },
-            { zombies: [{ type: 'normal', count: 5 }, { type: 'summoner', count: 1 }], interval: 350 },
-            { zombies: [{ type: 'buckethead', count: 3 }, { type: 'fast', count: 3 }, { type: 'summoner', count: 1 }], interval: 300 },
+        filteredProjects.forEach(project => {
+            const card = document.createElement('div');
+            card.className = 'glass-card project-card rounded-lg overflow-hidden shadow-lg';
+            card.dataset.projectId = project.id; // لربط البطاقة بالمجسم
+            card.innerHTML = `
+                <a href="${project.url}" target="_blank" rel="noopener noreferrer">
+                    <img src="${project.imageUrl}" alt="${project.title}" class="w-full h-48 object-cover">
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold text-white mb-2">${project.title}</h3>
+                        <p class="text-gray-400 text-sm">${project.description}</p>
+                    </div>
+                </a>
+            `;
+            projectsGrid.appendChild(card);
+        });
+    }
+
+    const filterContainer = document.getElementById('project-filters');
+    filterContainer.addEventListener('click', (e) => {
+        if (e.target.classList.contains('filter-btn')) {
+            filterContainer.querySelector('.active').classList.remove('active');
+            e.target.classList.add('active');
+            const filterValue = e.target.dataset.filter;
+            renderProjectCards(filterValue);
+            filterThreeJSObjects(filterValue);
+        }
+    });
+
+    renderProjectCards();
+    
+    // --- إعداد مشهد Three.js ---
+    let scene, camera, renderer, controls;
+    let raycaster, mouse;
+    let projectMeshes = [];
+    let INTERSECTED;
+
+    function initThreeJS() {
+        scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x121212, 0.035);
+        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 30;
+        renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        controls = new THREE.OrbitControls(camera, renderer.domElement);
+        Object.assign(controls, {
+            enableDamping: true, dampingFactor: 0.05, enableZoom: true, 
+            enablePan: false, minDistance: 15, maxDistance: 60, 
+            autoRotate: true, autoRotateSpeed: 0.3
+        });
+        
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+        scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight.position.set(5, 10, 7.5);
+        scene.add(directionalLight);
+        const pointLight1 = new THREE.PointLight(0x3b82f6, 2, 100);
+        pointLight1.position.set(-15, 10, 10);
+        scene.add(pointLight1);
+        
+        const geometries = [
+            new THREE.IcosahedronGeometry(2, 0), new THREE.TorusKnotGeometry(1.8, 0.6, 100, 16),
+            new THREE.OctahedronGeometry(2.2, 0), new THREE.DodecahedronGeometry(2.1, 0),
+            new THREE.TorusGeometry(2, 0.5, 16, 100), new THREE.CapsuleGeometry(1.5, 1, 4, 16)
         ];
 
-
-        function resizeAndRecalculate() {
-            const container = canvas.parentElement;
-            canvasWidth = container.clientWidth;
-            canvasHeight = container.clientHeight;
-            canvas.width = canvasWidth;
-            canvas.height = canvasHeight;
-            
-            cellSize = canvasHeight / 5;
-            
-            plantTypes.cherryBomb.explosionRadius = cellSize * 1.5;
-
-            createGrid();
-            initLawnmowers();
-            initClouds();
-        }
-
-        function createGrid() {
-            grid.length = 0;
-            if (!canvasHeight || !cellSize) return;
-            for (let i = 0; i < 5; i++) {
-                for (let j = 0; j < Math.floor(canvasWidth / cellSize); j++) {
-                    grid.push({ x: j * cellSize, y: i * cellSize, width: cellSize, height: cellSize, plant: null });
-                }
-            }
-        }
-        
-        function initLawnmowers() {
-            lawnmowers.length = 0;
-            if (!canvasHeight || !cellSize) return;
-            for (let i = 0; i < 5; i++) {
-                lawnmowers.push({ x: cellSize * 0.1, y: i * cellSize, width: cellSize * 0.8, height: cellSize, active: false, used: false });
-            }
-        }
-
-        function initClouds() {
-            clouds.length = 0;
-            for (let i = 0; i < 5; i++) {
-                clouds.push({
-                    x: Math.random() * canvasWidth,
-                    y: Math.random() * (canvasHeight * 0.3),
-                    size: Math.random() * 50 + 40,
-                    speed: Math.random() * 0.2 + 0.1
-                });
-            }
-        }
-
-        // --- Drawing Functions ---
-        function drawBackground() {
-            if (!canvas.height || !canvas.width) return;
-            const skyGradient = ctx.createLinearGradient(0, 0, 0, canvasHeight * 0.6);
-            skyGradient.addColorStop(0, '#87CEEB');
-            skyGradient.addColorStop(1, '#B0E0E6');
-            ctx.fillStyle = skyGradient;
-            ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-        }
-
-        function drawClouds() {
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-            clouds.forEach(cloud => {
-                ctx.beginPath();
-                ctx.ellipse(cloud.x, cloud.y, cloud.size, cloud.size * 0.6, 0, 0, Math.PI * 2);
-                ctx.fill();
+        projectsData.forEach((project, index) => {
+            const material = new THREE.MeshStandardMaterial({
+                color: 0xffffff, metalness: 0.7, roughness: 0.3,
+                flatShading: true, transparent: true, opacity: 0.8
             });
-        }
-
-        function drawLawn() {
-             for (let i = 0; i < 5; i++) {
-                if (i % 2 === 0) ctx.fillStyle = '#5a9c42';
-                else ctx.fillStyle = '#4f8a38';
-                ctx.fillRect(0, i * cellSize, canvasWidth, cellSize);
-            }
-            ctx.fillStyle = '#8B5A2B';
-            for (let i = 0; i < canvasWidth; i += 20) {
-                ctx.fillRect(i, canvasHeight - 20, 15, 20);
-            }
-            ctx.fillStyle = '#8B4513';
-            ctx.fillRect(-10, 0, cellSize * 0.6, canvasHeight);
-            ctx.fillStyle = '#A0522D';
-            ctx.fillRect(-5, 5, cellSize * 0.6 - 5, canvasHeight - 10);
-            ctx.save();
-            for (let i = 0; i < 400; i++) {
-                const x = Math.random() * canvasWidth;
-                const y = Math.random() * canvasHeight;
-                if (y < canvasHeight - 20 && x > cellSize * 0.6) {
-                    const dark = (Math.floor(y / cellSize) % 2 !== 0);
-                    ctx.fillStyle = dark ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)';
-                    ctx.beginPath();
-                    ctx.moveTo(x, y);
-                    ctx.lineTo(x - 1.5, y - 8);
-                    ctx.lineTo(x + 1.5, y - 8);
-                    ctx.closePath();
-                    ctx.fill();
-                }
-            }
-            ctx.restore();
-        }
-
-        function drawGridHighlight() {
-            if (selectedPlant && mousePos.x > -1 && mousePos.x > cellSize) {
-                const cellX = Math.floor(mousePos.x / cellSize) * cellSize;
-                const cellY = Math.floor(mousePos.y / cellSize) * cellSize;
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
-                ctx.fillRect(cellX, cellY, cellSize, cellSize);
-            }
-        }
-
-        function drawLawnmowers() {
-            const asset = assets['lawnmower'];
-            if (!asset || !asset.complete) return;
-            lawnmowers.forEach(mower => {
-                if (!mower.used) {
-                    ctx.drawImage(asset, mower.x, mower.y, mower.width, mower.height);
-                }
-            });
-        }
-
-        function drawPlants() {
-            grid.forEach(cell => {
-                if (cell.plant) {
-                    const plantInfo = plantTypes[cell.plant.type];
-                    let asset = assets[plantInfo.asset];
-                    if (cell.plant.type === 'wallnut') {
-                        const healthPercent = cell.plant.health / plantInfo.health;
-                        if (healthPercent < 0.33) asset = assets['wallnut_damaged2'];
-                        else if (healthPercent < 0.66) asset = assets['wallnut_damaged1'];
-                    }
-
-                    let scale = 1;
-                    if (cell.plant.spawnTimer > 0) {
-                        scale = 1.1 - (cell.plant.spawnTimer / 10);
-                        cell.plant.spawnTimer--;
-                    }
-
-                    ctx.save();
-                    ctx.translate(cell.x + cellSize / 2, cell.y + cellSize / 2);
-                    ctx.scale(scale, scale);
-                    
-                    const bobble = Math.sin(frame * 0.05 + cell.x) * (cellSize * 0.02);
-                    if(cell.plant.isShooting > 0) {
-                        const shootProgress = cell.plant.isShooting / 10;
-                        const shootScale = 1 - Math.sin(shootProgress * Math.PI) * 0.2;
-                        ctx.scale(shootScale, 1/shootScale);
-                        cell.plant.isShooting--;
-                    }
-                    
-                    const shadowGradient = ctx.createRadialGradient(0, cellSize * 0.4, 1, 0, cellSize * 0.4, cellSize * 0.3);
-                    shadowGradient.addColorStop(0, 'rgba(0,0,0,0.25)');
-                    shadowGradient.addColorStop(1, 'rgba(0,0,0,0)');
-                    ctx.fillStyle = shadowGradient;
-                    ctx.beginPath();
-                    ctx.ellipse(0, cellSize * 0.4, cellSize * 0.3, cellSize * 0.1, 0, 0, 2 * Math.PI);
-                    ctx.fill();
-
-                    if (cell.plant.type === 'cherryBomb' && frame % 15 < 7) ctx.filter = 'brightness(1.5)';
-                    if(cell.plant.hitTimer > 0) {
-                        ctx.filter = 'brightness(1.8)';
-                        cell.plant.hitTimer--;
-                    }
-                    
-                    if(asset && asset.complete) ctx.drawImage(asset, -cellSize / 2, -cellSize / 2 + bobble, cellSize, cellSize);
-                    
-                    ctx.restore();
-                    
-                    if (cell.plant.type !== 'cherryBomb') {
-                        ctx.fillStyle = '#B22222';
-                        ctx.fillRect(cell.x + cellSize * 0.2, cell.y + cellSize * 0.05, cellSize * 0.6, 5);
-                        ctx.fillStyle = '#008000';
-                        const healthPercentage = cell.plant.health / plantInfo.health;
-                        ctx.fillRect(cell.x + cellSize * 0.2, cell.y + cellSize * 0.05, cellSize * 0.6 * healthPercentage, 5);
-                    }
-                }
-            });
-        }
-
-        function drawZombies() {
-            zombies.forEach(z => {
-                const zombieInfo = zombieTypes[z.type];
-                let asset;
-                if (zombieInfo.asset === 'zombie-normal-walk') {
-                    const walkFrame = Math.floor(frame / 30) % 2 + 1; // Slowed down animation
-                    asset = assets[zombieInfo.asset + walkFrame];
-                } else {
-                    asset = assets[zombieInfo.asset];
-                }
-
-                const bobble = Math.sin(frame * 0.08 + z.y) * (cellSize * 0.03);
-                
-                ctx.save();
-                ctx.translate(z.x, z.y);
-                const shadowGradient = ctx.createRadialGradient(z.width / 2, z.height - (cellSize * 0.1), 1, z.width / 2, z.height - (cellSize * 0.1), cellSize * 0.3);
-                shadowGradient.addColorStop(0, 'rgba(0,0,0,0.25)');
-                shadowGradient.addColorStop(1, 'rgba(0,0,0,0)');
-                ctx.fillStyle = shadowGradient;
-                ctx.beginPath();
-                ctx.ellipse(z.width / 2, z.height - (cellSize * 0.1), cellSize * 0.3, cellSize * 0.1, 0, 0, 2 * Math.PI);
-                ctx.fill();
-                
-                if(asset && asset.complete) ctx.drawImage(asset, 0, bobble, z.width, z.height);
-                ctx.restore();
-
-                ctx.fillStyle = '#B22222';
-                ctx.fillRect(z.x + z.width * 0.2, z.y + z.height * 0.1, z.width * 0.6, 5);
-                ctx.fillStyle = '#90EE90';
-                const healthPercentage = z.health / zombieInfo.health;
-                ctx.fillRect(z.x + z.width * 0.2, z.y + z.height * 0.1, z.width * 0.6 * healthPercentage, 5);
-            });
-        }
-        
-        function drawProjectiles() { 
-            projectiles.forEach(p => { 
-                ctx.save();
-                ctx.translate(p.x, p.y);
-                ctx.rotate(p.rotation);
-                const gradient = ctx.createRadialGradient(0, 0, cellSize * 0.02, 0, 0, cellSize * 0.08);
-                gradient.addColorStop(0, '#98FB98');
-                gradient.addColorStop(1, '#3CB371');
-                ctx.fillStyle = gradient;
-                ctx.beginPath(); 
-                ctx.ellipse(0, 0, cellSize * 0.1, cellSize * 0.07, 0, 0, Math.PI * 2);
-                ctx.fill(); 
-                ctx.restore();
-            }); 
-        }
-        
-        function drawSuns() { suns.forEach(sun => { const pulse = Math.sin(frame * 0.1) * (cellSize * 0.03); const gradient = ctx.createRadialGradient(sun.x + cellSize/2, sun.y, 5 + pulse, sun.x + cellSize/2, sun.y, cellSize * 0.25 + pulse); gradient.addColorStop(0, 'white'); gradient.addColorStop(0.4, '#FFD700'); gradient.addColorStop(1, 'rgba(255,165,0,0)'); ctx.fillStyle = gradient; ctx.beginPath(); ctx.arc(sun.x + cellSize/2, sun.y, cellSize * 0.25 + pulse, 0, Math.PI * 2); ctx.fill(); }); }
-        
-        function createParticles(x, y, count, color, speed=3, stuckTo=null) { for (let i = 0; i < count; i++) { particles.push({ x, y, vx: (Math.random() - 0.5) * speed, vy: (Math.random() - 0.5) * speed, size: Math.random() * 5 + 2, color, life: 30, stuckTo, initialX: x, initialY: y }); } }
-        function handleParticles() { for (let i = particles.length - 1; i >= 0; i--) { const p = particles[i]; if (!p.stuckTo) { p.x += p.vx; p.y += p.vy; } p.life--; if (p.life <= 0 || (p.stuckTo && p.stuckTo.health <= 0)) { particles.splice(i, 1); } } }
-        function drawParticles() { particles.forEach(p => { let drawX = p.x; let drawY = p.y; if (p.stuckTo) { drawX = p.stuckTo.x + (p.initialX - p.stuckTo.x); drawY = p.stuckTo.y + (p.initialY - p.stuckTo.y); } ctx.fillStyle = p.color; ctx.globalAlpha = p.life / 30; ctx.beginPath(); ctx.arc(drawX, drawY, p.size, 0, Math.PI * 2); ctx.fill(); }); ctx.globalAlpha = 1; }
-
-        // --- Logic Functions ---
-        function handleClouds() {
-            clouds.forEach(cloud => {
-                cloud.x -= cloud.speed;
-                if (cloud.x + cloud.size < 0) {
-                    cloud.x = canvasWidth + cloud.size;
-                }
-            });
-        }
-        function handleLawnmowers() {
-            lawnmowers.forEach(mower => {
-                if (mower.active && !mower.used) {
-                    mower.x += 10;
-                    createParticles(mower.x, mower.y + cellSize / 2, 2, 'rgba(100,100,100,0.5)', 5);
-                    createParticles(mower.x, mower.y + cellSize - 20, 2, 'rgba(0,100,0,0.5)', 5);
-                    zombies.forEach(z => {
-                        if (z.y === mower.y && z.x < mower.x + mower.width) {
-                            z.health = 0;
-                        }
-                    });
-                    if (mower.x > canvasWidth) {
-                        mower.used = true;
-                    }
-                }
-            });
-        }
-
-        function handlePlants() {
-            grid.forEach(cell => {
-                if(!cell.plant) return;
-                cell.plant.timer = (cell.plant.timer || 0) + 1;
-                const plantInfo = plantTypes[cell.plant.type];
-                if(cell.plant.type === 'peashooter' && cell.plant.timer % plantInfo.shootInterval === 0) {
-                    if (zombies.some(z => z.y === cell.y && z.x > cell.x)) { 
-                        projectiles.push({ x: cell.x + cellSize * 0.7, y: cell.y + cellSize * 0.45, rotation: 0 });
-                        cell.plant.isShooting = 10;
-                    }
-                }
-                if(cell.plant.type === 'sunflower' && cell.plant.timer % plantInfo.productionInterval === 0) { 
-                    suns.push({ x: cell.x + Math.random() * (cellSize*0.4) - (cellSize*0.2), y: cell.y, targetY: cell.y + cellSize*0.5, speed: 0.5, value: 25, collected: false });
-                    createParticles(cell.x + cellSize/2, cell.y + cellSize/2, 15, 'rgba(255, 223, 0, 0.7)');
-                }
-                if (cell.plant.type === 'cherryBomb' && cell.plant.timer >= plantInfo.fuse) { handleExplosion(cell.x, cell.y, plantInfo); cell.plant = null; }
-            });
-        }
-
-        function handleExplosion(x, y, plantInfo) {
-            const explosionDiv = document.createElement('div');
-            explosionDiv.className = 'explosion';
-            const explosionSize = plantInfo.explosionRadius * 2;
-            explosionDiv.style.width = `${explosionSize}px`;
-            explosionDiv.style.height = `${explosionSize}px`;
-            explosionDiv.style.left = `${(x + cellSize/2 - plantInfo.explosionRadius) / canvas.width * 100}%`;
-            explosionDiv.style.top = `${(y + cellSize/2 - plantInfo.explosionRadius) / canvas.height * 100}%`;
-            gameContainer.appendChild(explosionDiv);
-            setTimeout(() => explosionDiv.remove(), 300);
-            zombies.forEach(z => { const distance = Math.sqrt(Math.pow(z.x - x, 2) + Math.pow(z.y - y, 2)); if (distance < plantInfo.explosionRadius) { z.health -= plantInfo.damage; } });
-        }
-
-        function handleZombies() {
-            if (!waveInProgress) return;
-            const currentWave = waves[currentWaveIndex];
-            const totalZombiesInWave = currentWave.zombies.reduce((acc, z) => acc + z.count, 0);
-            if (waveSpawnTimer % currentWave.interval === 0 && waveZombiesSpawned < totalZombiesInWave) {
-                let availableTypes = currentWave.zombies.filter(zType => { const spawnedOfType = zombies.filter(z => z.originalType === zType.type).length + zombiesKilledInWave.filter(k => k === zType.type).length; return spawnedOfType < zType.count; });
-                if(availableTypes.length > 0) {
-                    const zombieToSpawn = availableTypes[Math.floor(Math.random() * availableTypes.length)];
-                    const randomLane = Math.floor(Math.random() * 5) * cellSize;
-                    const zombieInfo = zombieTypes[zombieToSpawn.type];
-                    zombies.push({ x: canvas.width, y: randomLane, width: cellSize, height: cellSize, type: zombieToSpawn.type, originalType: zombieToSpawn.type, health: zombieInfo.health, speed: zombieInfo.speed * (cellSize/100), summonTimer: 0 });
-                    waveZombiesSpawned++;
-                }
-            }
-            waveSpawnTimer++;
-
-            for (let i = zombies.length - 1; i >= 0; i--) {
-                const z = zombies[i];
-                const cellIndex = grid.findIndex(cell => cell.x < z.x + z.width/2 && cell.x + cell.width > z.x + z.width/2 && cell.y === z.y);
-                if (cellIndex !== -1 && grid[cellIndex].plant && grid[cellIndex].plant.type !== 'cherryBomb') {
-                    grid[cellIndex].plant.health -= 0.2;
-                    grid[cellIndex].plant.hitTimer = 5;
-                    if(grid[cellIndex].plant.health <= 0) grid[cellIndex].plant = null;
-                } else { z.x -= z.speed; }
-                
-                const mowerIndex = Math.floor(z.y / cellSize);
-                if (mowerIndex >= 0 && mowerIndex < lawnmowers.length) {
-                    const mower = lawnmowers[mowerIndex];
-                    if (!mower.active && !mower.used && z.x < mower.x + mower.width) {
-                        mower.active = true;
-                    }
-                }
-                
-                if (z.x < 0) {
-                    const mower = lawnmowers[Math.floor(z.y / cellSize)];
-                    if (!mower || mower.used) {
-                        gameOver = true; 
-                        messageTitle.innerText = 'لقد خسر الزومبي!';
-                    }
-                }
-                if (z.type === 'summoner') { z.summonTimer = (z.summonTimer || 0) + 1; if (z.summonTimer % zombieTypes.summoner.summonInterval === 0) { zombies.push({ x: z.x, y: z.y, width: cellSize, height: cellSize, type: 'normal', originalType: 'normal', health: zombieTypes.normal.health, speed: zombieTypes.normal.speed * (cellSize/100) }); } }
-            }
-        }
-
-        function handleProjectiles() { for (let i = projectiles.length - 1; i >= 0; i--) { const p = projectiles[i]; p.x += 5; p.rotation = (p.rotation || 0) + 0.2; if (p.x > canvas.width) projectiles.splice(i, 1); } }
-        function handleSuns() { if (frame % 400 === 0) { suns.push({ x: Math.random() * (canvas.width - cellSize), y: 0, targetY: Math.random() * (canvas.height - cellSize), speed: 0.5, value: 25, collected: false }); } suns.forEach(sun => { if (sun.y < sun.targetY) sun.y += sun.speed; }); }
-
-        function handleCollisions() {
-            for (let i = projectiles.length - 1; i >= 0; i--) {
-                const p = projectiles[i];
-                for (let j = zombies.length - 1; j >= 0; j--) {
-                    const z = zombies[j];
-                    if (p.x > z.x && p.x < z.x + z.width && p.y > z.y + z.height * 0.2 && p.y < z.y + z.height * 0.8) {
-                        z.health -= 25; 
-                        createParticles(p.x, p.y, 1, 'rgba(50, 200, 50, 0.8)', 0, z); // Splat particle
-                        projectiles.splice(i, 1); 
-                        
-                        if(z.type === 'buckethead' && z.health <= zombieTypes.normal.health) {
-                            z.type = 'normal';
-                            z.speed = zombieTypes.normal.speed * (cellSize/100);
-                            createParticles(z.x + z.width/2, z.y + z.height*0.2, 15, '#aaa');
-                        }
-                        break;
-                    }
-                }
-            }
-            for (let i = zombies.length - 1; i >= 0; i--) {
-                if (zombies[i].health <= 0) {
-                    const z = zombies.splice(i, 1)[0];
-                    sunAmount += zombieTypes[z.originalType].points;
-                    zombiesKilledInWave.push(z.originalType);
-                    createParticles(z.x + z.width/2, z.y + z.height/2, 30, '#555');
-                    updateSunDisplay();
-                }
-            }
-        }
-        
-        function checkGameState() {
-            if (gameOver) {
-                waveInProgress = false; messageBox.classList.remove('hidden'); restartButton.innerText = 'إعادة اللعب';
-            } else {
-                const totalZombiesInWave = waves[currentWaveIndex].zombies.reduce((acc, z) => acc + z.count, 0);
-                if (waveInProgress && zombiesKilledInWave.length === totalZombiesInWave && zombies.length === 0) {
-                    waveInProgress = false;
-                    if (currentWaveIndex >= waves.length - 1) {
-                        messageTitle.innerText = 'لقد فزت باللعبة!'; restartButton.innerText = 'العب مجدداً'; gameOver = true;
-                    } else {
-                        messageTitle.innerText = `أكملت الموجة ${currentWaveIndex + 1}!`; restartButton.innerText = 'ابدأ الموجة التالية'; currentWaveIndex++;
-                    }
-                    messageBox.classList.remove('hidden');
-                }
-            }
-        }
-
-        function animate() {
-            animationFrameId = requestAnimationFrame(animate);
-            ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-            drawBackground(); 
-            drawClouds();
-            drawLawn();
-            drawLawnmowers();
-            drawSuns(); 
-            drawPlants(); 
-            drawZombies(); 
-            drawProjectiles(); 
-            drawParticles();
-            drawGridHighlight();
-
-            handleClouds();
-            handleParticles();
-            handleLawnmowers();
-
-            if(waveInProgress) { handlePlants(); handleZombies(); handleProjectiles(); handleSuns(); handleCollisions(); }
-            checkGameState();
-            updateCooldowns();
-            frame++;
-        }
-        
-        function updateSunDisplay() { sunDisplay.innerText = sunAmount; }
-        function updateWaveDisplay() { waveDisplay.innerText = `الموجة: ${currentWaveIndex + 1}`; }
-
-        function selectPlant(type) { 
-            const plant = plantTypes[type];
-            const timeSinceUsed = frame - plant.lastUsed;
-            if (sunAmount >= plant.cost && timeSinceUsed >= plant.cooldown) {
-                selectedPlant = type; 
-                document.querySelectorAll('.plant-card').forEach(c => c.classList.remove('selected')); 
-                document.getElementById(type + 'Card').classList.add('selected'); 
-            }
-        }
-        
-        function createPlantCards() {
-            plantSelector.innerHTML = '';
-            for (const type in plantTypes) {
-                const plant = plantTypes[type];
-                const card = document.createElement('div');
-                card.id = type + 'Card';
-                card.className = 'plant-card bg-[#549439] p-2 rounded-lg text-center cursor-pointer';
-                card.onclick = () => selectPlant(type);
-                const img = assets[plant.asset].cloneNode();
-                img.className = 'w-12 h-12 mx-auto';
-                const nameDiv = document.createElement('div');
-                nameDiv.className = 'font-bold';
-                nameDiv.innerText = plant.name;
-                const costDiv = document.createElement('div');
-                costDiv.className = 'font-bold text-yellow-300';
-                costDiv.innerText = `${plant.cost} ☀️`;
-                const cooldownDiv = document.createElement('div');
-                cooldownDiv.id = type + 'Cooldown';
-                cooldownDiv.className = 'cooldown-overlay hidden';
-                card.append(img, nameDiv, costDiv, cooldownDiv);
-                plantSelector.appendChild(card);
-            }
-        }
-
-        function updateCooldowns() {
-            for (const type in plantTypes) {
-                const plant = plantTypes[type];
-                const cooldownDiv = document.getElementById(type + 'Cooldown');
-                const timeSinceUsed = frame - plant.lastUsed;
-                if (timeSinceUsed < plant.cooldown) {
-                    cooldownDiv.classList.remove('hidden');
-                    const timeLeft = Math.ceil((plant.cooldown - timeSinceUsed) / 60);
-                    cooldownDiv.innerText = timeLeft;
-                } else {
-                    cooldownDiv.classList.add('hidden');
-                }
-            }
-        }
-
-        canvas.addEventListener('click', (e) => {
-            const rect = canvas.getBoundingClientRect();
-            const mouseX = e.clientX - rect.left; const mouseY = e.clientY - rect.top;
-            for (let i = suns.length - 1; i >= 0; i--) { const s = suns[i]; const distance = Math.sqrt(Math.pow(s.x + cellSize/2 - mouseX, 2) + Math.pow(s.y - mouseY, 2)); if (distance < cellSize * 0.4 && !s.collected) { s.collected = true; sunAmount += s.value; createParticles(s.x + cellSize/2, s.y, 10, 'rgba(255, 255, 0, 0.8)'); updateSunDisplay(); suns.splice(i, 1); return; } }
-            if (selectedPlant) {
-                const cellX = Math.floor(mouseX / cellSize) * cellSize; const cellY = Math.floor(mouseY / cellSize) * cellSize;
-                if (cellX < cellSize) return;
-                const cellIndex = grid.findIndex(c => c.x === cellX && c.y === cellY);
-                if (cellIndex !== -1 && !grid[cellIndex].plant) {
-                    const plant = plantTypes[selectedPlant];
-                    sunAmount -= plant.cost; updateSunDisplay();
-                    plant.lastUsed = frame;
-                    grid[cellIndex].plant = { type: selectedPlant, health: plant.health, timer: 0, isShooting: 0, hitTimer: 0, spawnTimer: 10 };
-                    selectedPlant = null; document.querySelectorAll('.plant-card').forEach(c => c.classList.remove('selected'));
-                }
-            }
-        });
-        
-        canvas.addEventListener('mousemove', (e) => {
-            const rect = canvas.getBoundingClientRect();
-            mousePos.x = e.clientX - rect.left;
-            mousePos.y = e.clientY - rect.top;
-        });
-        
-        canvas.addEventListener('mouseleave', () => {
-            mousePos.x = -1;
-            mousePos.y = -1;
+            const geometry = geometries[index % geometries.length];
+            const mesh = new THREE.Mesh(geometry, material);
+            const phi = Math.acos(-1 + (2 * index) / (projectsData.length -1));
+            const theta = Math.sqrt(projectsData.length * Math.PI) * phi;
+            mesh.position.setFromSphericalCoords(15, phi, theta);
+            mesh.userData = project;
+            mesh.originalPosition = mesh.position.clone();
+            scene.add(mesh);
+            projectMeshes.push(mesh);
         });
 
-        function startWave() {
-            if (gameOver) { initialize(true); return; }
-            waveZombiesSpawned = 0; zombiesKilledInWave = []; waveSpawnTimer = 0; waveInProgress = true;
-            updateWaveDisplay(); messageBox.classList.add('hidden');
-        }
-        
-        function initialize(fullReset = false) {
-            if(fullReset) {
-                sunAmount = 150; selectedPlant = null; frame = 0; gameOver = false; currentWaveIndex = 0;
-                zombies.length = 0; projectiles.length = 0; suns.length = 0; particles.length = 0;
-                for(const type in plantTypes) { plantTypes[type].lastUsed = -plantTypes[type].cooldown; }
-            }
-            resizeAndRecalculate();
-            messageTitle.innerText = `استعد للموجة ${currentWaveIndex + 1}!`;
-            restartButton.innerText = 'ابدأ اللعب';
-            messageBox.classList.remove('hidden');
-            updateSunDisplay();
-            updateWaveDisplay();
-        }
-        
-        restartButton.addEventListener('click', startWave);
-        window.addEventListener('resize', resizeAndRecalculate);
-        
-        window.addEventListener('load', () => {
-            loadAssets();
-            createPlantCards();
-            initialize(true);
-            if (!animationFrameId) {
-                animate();
+        raycaster = new THREE.Raycaster();
+        mouse = new THREE.Vector2();
+        window.addEventListener('resize', onWindowResize, false);
+        window.addEventListener('mousemove', onMouseMove, false);
+        window.addEventListener('click', onMouseClick, false);
+    }
+
+    // جديد: دالة لفلترة مجسمات Three.js
+    function filterThreeJSObjects(filter) {
+        projectMeshes.forEach(mesh => {
+            const isVisible = (filter === 'all' || mesh.userData.category === filter);
+            mesh.visible = isVisible;
+        });
+    }
+
+    function animate() {
+        requestAnimationFrame(animate);
+        controls.update();
+        projectMeshes.forEach(mesh => {
+            if (mesh !== INTERSECTED) {
+                mesh.rotation.x += 0.001;
+                mesh.rotation.y += 0.002;
             }
         });
+        updateInteraction();
+        renderer.render(scene, camera);
+    }
 
+    function onWindowResize() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    function onMouseMove(event) {
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+        tooltip.style.left = event.clientX + 15 + 'px';
+        tooltip.style.top = event.clientY + 15 + 'px';
+    }
+    
+    function onMouseClick(event) {
+        if (INTERSECTED) {
+            window.open(INTERSECTED.userData.url, '_blank');
+        }
+    }
+
+    function updateInteraction() {
+        raycaster.setFromCamera(mouse, camera);
+        const intersects = raycaster.intersectObjects(projectMeshes.filter(m => m.visible));
+
+        if (intersects.length > 0) {
+            if (INTERSECTED != intersects[0].object) {
+                resetIntersected();
+                INTERSECTED = intersects[0].object;
+                INTERSECTED.material.emissive.setHex(0x555555);
+                INTERSECTED.scale.set(1.2, 1.2, 1.2);
+                tooltip.style.display = 'block';
+                tooltip.textContent = INTERSECTED.userData.title;
+            }
+        } else {
+            resetIntersected();
+        }
+    }
+    
+    function resetIntersected() {
+        if (INTERSECTED) {
+            INTERSECTED.material.emissive.setHex(0x000000);
+            INTERSECTED.scale.set(1, 1, 1);
+        }
+        INTERSECTED = null;
+        tooltip.style.display = 'none';
+    }
+
+    // --- منطق واجهة المستخدم الإضافي ---
+    // (يتبع في الجزء التالي)
+    </script>
+    <script>
+    // --- منطق واجهة المستخدم (تكملة) ---
+    const cursor = document.querySelector('.cursor');
+    const cursorDot = document.querySelector('.cursor-dot');
+    const scrollToTopBtn = document.getElementById('scroll-to-top');
+
+    // حركة مؤشر الفأرة
+    window.addEventListener('mousemove', e => {
+        cursor.style.left = e.clientX + 'px';
+        cursor.style.top = e.clientY + 'px';
+        cursorDot.style.left = e.clientX + 'px';
+        cursorDot.style.top = e.clientY + 'px';
+    });
+
+    document.querySelectorAll('a, button, .project-card').forEach(el => {
+        el.addEventListener('mouseenter', () => cursor.style.transform = 'translate(-50%, -50%) scale(1.5)');
+        el.addEventListener('mouseleave', () => cursor.style.transform = 'translate(-50%, -50%) scale(1)');
+    });
+
+    // إظهار وإخفاء زر العودة للأعلى
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 300) {
+            scrollToTopBtn.classList.add('visible');
+        } else {
+            scrollToTopBtn.classList.remove('visible');
+        }
+    });
+
+    // تأثير ظهور الأقسام عند التمرير
+    const sections = document.querySelectorAll('.fade-in-section');
+    const sectionObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1 });
+    sections.forEach(section => sectionObserver.observe(section));
+    
+    // ربط بطاقات المشاريع بالمجسمات ثلاثية الأبعاد
+    document.getElementById('projects-grid').addEventListener('mouseover', e => {
+        const card = e.target.closest('.project-card');
+        if (card) {
+            const projectId = parseInt(card.dataset.projectId);
+            const targetMesh = projectMeshes.find(m => m.userData.id === projectId);
+            if (targetMesh && targetMesh.visible) {
+                 if (INTERSECTED != targetMesh) {
+                    resetIntersected();
+                    INTERSECTED = targetMesh;
+                    INTERSECTED.material.emissive.setHex(0x555555);
+                    INTERSECTED.scale.set(1.2, 1.2, 1.2);
+                 }
+            }
+        }
+    });
+
+    // قائمة الموبايل
+    menuBtn.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+        mobileMenu.classList.toggle('flex');
+    });
+    
+    document.querySelectorAll('#mobile-menu a, nav a').forEach(link => {
+        link.addEventListener('click', () => {
+             if (!mobileMenu.classList.contains('hidden')) {
+                mobileMenu.classList.add('hidden');
+                mobileMenu.classList.remove('flex');
+            }
+        });
+    });
+    
+    // نموذج الاتصال
+    contactForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const whatsappNumber = '9665XXXXXXXX'; 
+        const name = document.getElementById('name').value;
+        const message = document.getElementById('message').value;
+        const fullMessage = `*رسالة جديدة من الموقع:*\n\n*الاسم:* ${name}\n*الرسالة:* ${message}`;
+        const encodedMessage = encodeURIComponent(fullMessage);
+        const whatsappURL = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
+        window.open(whatsappURL, '_blank');
+        contactForm.reset();
+    });
+
+    // --- بدء تشغيل كل شيء ---
+    initThreeJS();
+    animate();
     </script>
 </body>
 </html>
