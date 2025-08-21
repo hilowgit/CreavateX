@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>معرض أعمال | CreavateX</title>
-    <!-- جديد: أيقونة الموقع -->
+    <!-- أيقونة الموقع -->
     <link rel="icon" href="https://i.postimg.cc/5NqhJMR4/crevatex2-bw.png" type="image/png">
     
     <!-- Google Fonts: Cairo -->
@@ -205,6 +205,29 @@
             color: white;
             font-weight: bold;
         }
+        
+        /* --- جديد: أنماط النافذة المنبثقة --- */
+        #construction-modal {
+            transition: opacity 0.3s ease-in-out;
+        }
+        #construction-modal > div {
+            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+        }
+        #construction-modal.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        #construction-modal.visible > div {
+            transform: scale(1);
+            opacity: 1;
+        }
+        @keyframes wrench-swing {
+            0%, 100% { transform: rotate(-15deg); }
+            50% { transform: rotate(15deg); }
+        }
+        .animated-icon svg {
+            animation: wrench-swing 2s ease-in-out infinite;
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-gray-200">
@@ -224,10 +247,21 @@
     <!-- تلميح يظهر عند التحويم -->
     <div id="tooltip"></div>
 
+    <!-- جديد: نافذة "قيد التطوير" -->
+    <div id="construction-modal" class="fixed inset-0 bg-black bg-opacity-70 z-[10001] flex items-center justify-center opacity-0 pointer-events-none">
+        <div class="bg-gray-800 p-8 rounded-2xl shadow-2xl text-center max-w-sm mx-4 transform scale-95 opacity-0">
+            <div class="animated-icon w-24 h-24 mx-auto mb-6">
+                <svg class="w-full h-full text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            </div>
+            <h3 class="text-2xl font-bold text-white mb-3">قيد التطوير</h3>
+            <p class="text-gray-300 mb-8">هذا المشروع لا يزال في ورشة العمل! نعمل بجد لإطلاقه قريباً.</p>
+            <button id="close-modal-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-full transition-colors">موافق</button>
+        </div>
+    </div>
+
     <!-- Header -->
     <header class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 glass-card">
         <div class="container mx-auto px-6 py-3 flex justify-between items-center">
-            <!-- تعديل: تم تغيير الشعار -->
             <img src="https://i.postimg.cc/5NqhJMR4/crevatex2-bw.png" alt="شعار CreavateX" class="h-12 w-auto">
             <nav class="hidden md:flex space-x-8 space-x-reverse">
                 <a href="#hero" class="hover:text-blue-400 transition-colors">الرئيسية</a>
@@ -273,7 +307,6 @@
                 </div>
                 <div class="flex flex-col md:flex-row items-center gap-12">
                     <div class="md:w-1/3 text-center">
-                        <!-- تعديل: تم تغيير الشعار -->
                         <img src="https://i.postimg.cc/5NqhJMR4/crevatex2-bw.png" 
                              alt="شعار شركة CreavateX" 
                              class="max-w-xs mx-auto p-4">
@@ -303,7 +336,6 @@
                 <div class="text-center mb-16">
                     <h2 class="text-4xl font-bold text-white">المشاريع المميزة</h2>
                     <div class="w-24 h-1 bg-blue-500 mx-auto mt-4 rounded"></div>
-                    <!-- تعديل: تم تحديث أزرار الفلترة -->
                     <div id="project-filters" class="flex justify-center flex-wrap gap-4 mt-8">
                         <button class="filter-btn active" data-filter="all">الكل</button>
                         <button class="filter-btn" data-filter="ecommerce">متاجر إلكترونية</button>
@@ -312,7 +344,7 @@
                     </div>
                 </div>
                 <div id="projects-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    <!-- سيتم ملء بطاقات المشاريع هنا بواسطة JavaScript -->
+                    <!-- Cards will be populated here -->
                 </div>
             </div>
         </section>
@@ -344,14 +376,12 @@
         </section>
     </main>
 
-    <!-- زر العودة للأعلى -->
     <a id="scroll-to-top" href="#hero">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
         </svg>
     </a>
     
-    <!-- Footer -->
     <footer class="content-section py-8">
         <div class="container mx-auto px-6 text-center text-gray-400">
             <p>&copy; <span id="year"></span> | جميع الحقوق محفوظة لـ <span class="font-bold">CreavateX</span>.</p>
@@ -375,7 +405,7 @@
     const mobileMenu = document.getElementById('mobile-menu');
     document.getElementById('year').textContent = new Date().getFullYear();
 
-    // --- تعديل: تم تحديث بيانات وفئات المشاريع ---
+    // --- بيانات المشاريع مع الصور المحدثة ---
     const projectsData = [
         {
             id: 1,
@@ -383,7 +413,7 @@
             category: 'management',
             description: 'منصة متكاملة لإدارة مشروعك مع لوحة تحكم.',
             url: '#',
-            imageUrl: 'https://techorchard.com/wp-content/uploads/2021/09/TO_ModernManagement_092321.jpg'
+            imageUrl: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=1770&auto=format&fit=crop'
         },
         {
             id: 2,
@@ -391,7 +421,7 @@
             category: 'ecommerce',
             description: 'تطبيق مرن ومتطور لبيع المنتجات المنزلية بطريقة تسويقية عصرية وسهلة لزيادة المبيعات.',
             url: '#',
-            imageUrl: 'https://images.unsplash.com/photo-1571175443880-49e1d25b2dcb?q=80&w=1770&auto=format&fit=crop'
+            imageUrl: 'https://media.elwatannews.com/media/img/mediaarc/large/8294161301672077821.jpg'
         },
         {
             id: 3,
@@ -399,14 +429,14 @@
             category: 'portfolio',
             description: 'موقع ويب يعرض خدمات المدرب أو الأستاذ بطريقة جذابة وحديثة.',
             url: '#',
-            imageUrl: 'https://images.unsplash.com/photo-1588693951525-2BC3d2747ae2?q=80&w=1770&auto=format&fit=crop'
+            imageUrl: 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?q=80&w=1770&auto=format&fit=crop'
         },
         {
             id: 4,
             title: 'موقع حجوزات فندقية',
             category: 'ecommerce',
             description: 'منصة تتيح للمستخدمين البحث عن الفنادق وحجز الغرف بسهولة.',
-            url: '#',
+            url: '#under-construction', // تعديل: رابط لتشغيل النافذة
             imageUrl: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=1740&auto=format&fit=crop'
         },
         {
@@ -429,7 +459,7 @@
             card.className = 'glass-card project-card rounded-lg overflow-hidden shadow-lg';
             card.dataset.projectId = project.id; 
             card.innerHTML = `
-                <a href="${project.url}" target="_blank" rel="noopener noreferrer">
+                <a href="${project.url}" ${project.url !== '#under-construction' ? 'target="_blank"' : ''} rel="noopener noreferrer">
                     <img src="${project.imageUrl}" alt="${project.title}" class="w-full h-48 object-cover">
                     <div class="p-6">
                         <h3 class="text-xl font-bold text-white mb-2">${project.title}</h3>
@@ -493,7 +523,7 @@
         const geometries = [
             new THREE.IcosahedronGeometry(2, 0), new THREE.TorusKnotGeometry(1.8, 0.6, 100, 16),
             new THREE.OctahedronGeometry(2.2, 0), new THREE.DodecahedronGeometry(2.1, 0),
-            new THREE.TorusGeometry(2, 0.5, 16, 100), new THREE.CylinderGeometry(1.5, 1.5, 3, 32)
+            new THREE.TorusGeometry(2, 0.5, 16, 100)
         ];
 
         projectsData.forEach((project, index) => {
@@ -521,7 +551,6 @@
         mouse = new THREE.Vector2();
         window.addEventListener('resize', onWindowResize, false);
         document.addEventListener('mousemove', onMouseMove, false);
-        window.addEventListener('click', onMouseClick, false);
         window.addEventListener('scroll', onPageScroll, false);
     }
 
@@ -580,12 +609,6 @@
         tooltip.style.top = event.clientY + 15 + 'px';
     }
     
-    function onMouseClick(event) {
-        if (INTERSECTED) {
-            window.open(INTERSECTED.userData.url, '_blank');
-        }
-    }
-
     function updateInteraction() {
         raycaster.setFromCamera(mouse, camera);
         const intersects = raycaster.intersectObjects(projectMeshes.filter(m => m.visible));
@@ -652,19 +675,6 @@
     }, { threshold: 0.1 });
     sections.forEach(section => sectionObserver.observe(section));
     
-    document.getElementById('projects-grid').addEventListener('mouseover', e => {
-        const card = e.target.closest('.project-card');
-        if (card) {
-            const projectId = parseInt(card.dataset.projectId);
-            const targetMesh = projectMeshes.find(m => m.userData.id === projectId);
-            if (targetMesh && targetMesh.visible) {
-                 if (INTERSECTED != targetMesh) {
-                    // The animate loop handles the visual change
-                 }
-            }
-        }
-    });
-
     menuBtn.addEventListener('click', () => {
         mobileMenu.classList.toggle('hidden');
         mobileMenu.classList.toggle('flex');
@@ -681,7 +691,7 @@
     
     contactForm.addEventListener('submit', function(e) {
         e.preventDefault();
-        const whatsappNumber = '+963962967893'; // Replace with your number
+        const whatsappNumber = '+963962967893'; 
         const name = document.getElementById('name').value;
         const message = document.getElementById('message').value;
         const fullMessage = `*رسالة جديدة من الموقع:*\n\n*الاسم:* ${name}\n*الرسالة:* ${message}`;
@@ -689,6 +699,33 @@
         const whatsappURL = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
         window.open(whatsappURL, '_blank');
         contactForm.reset();
+    });
+
+    // --- جديد: منطق النافذة المنبثقة ---
+    const constructionModal = document.getElementById('construction-modal');
+    const closeModalBtn = document.getElementById('close-modal-btn');
+
+    function openModal() {
+        constructionModal.classList.add('visible');
+    }
+
+    function closeModal() {
+        constructionModal.classList.remove('visible');
+    }
+
+    projectsGrid.addEventListener('click', (e) => {
+        const link = e.target.closest('a');
+        if (link && link.getAttribute('href') === '#under-construction') {
+            e.preventDefault();
+            openModal();
+        }
+    });
+    
+    closeModalBtn.addEventListener('click', closeModal);
+    constructionModal.addEventListener('click', (e) => {
+        if (e.target === constructionModal) {
+            closeModal();
+        }
     });
 
     // --- بدء تشغيل كل شيء ---
