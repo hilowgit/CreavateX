@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>معرض أعمال | CreavateX</title>
+    <!-- جديد: أيقونة الموقع -->
+    <link rel="icon" href="https://i.postimg.cc/5NqhJMR4/crevatex2-bw.png" type="image/png">
     
     <!-- Google Fonts: Cairo -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -27,10 +29,9 @@
             background-color: #121212;
             color: #e5e5e5;
             overflow-x: hidden;
-            /* --- تعديل: تمت إزالة خاصية المؤشر من هنا لتطبيقها بشكل مشروط --- */
         }
 
-        /* --- جديد: شاشة التحميل --- */
+        /* --- شاشة التحميل --- */
         #loader {
             position: fixed;
             top: 0;
@@ -56,7 +57,7 @@
             to { transform: rotate(360deg); }
         }
 
-        /* --- جديد: مؤشر فأرة مخصص --- */
+        /* --- مؤشر فأرة مخصص --- */
         .cursor {
             width: 20px;
             height: 20px;
@@ -67,7 +68,7 @@
             z-index: 9999;
             transform: translate(-50%, -50%);
             transition: width 0.2s, height 0.2s, background-color 0.2s;
-            display: none; /* تعديل: إخفاء المؤشر بشكل افتراضي (للموبايل) */
+            display: none; 
         }
         .cursor-dot {
             width: 4px;
@@ -78,17 +79,16 @@
             pointer-events: none;
             z-index: 9999;
             transform: translate(-50%, -50%);
-            display: none; /* تعديل: إخفاء المؤشر بشكل افتراضي (للموبايل) */
+            display: none; 
         }
         
-        /* --- جديد: التحكم في ظهور المؤشر حسب الجهاز --- */
-        /* This media query checks if the device has a primary input mechanism that can hover (like a mouse) */
+        /* --- التحكم في ظهور المؤشر حسب الجهاز --- */
         @media (hover: hover) and (pointer: fine) {
             body {
-                cursor: none; /* إخفاء المؤشر الافتراضي على أجهزة الكمبيوتر */
+                cursor: none; 
             }
             .cursor, .cursor-dot {
-                display: block; /* إظهار المؤشر المخصص على أجهزة الكمبيوتر */
+                display: block; 
             }
         }
 
@@ -105,7 +105,7 @@
             background-image: url('https://images.unsplash.com/photo-1531297484001-80022131f5a1?q=80&w=1740&auto=format&fit=crop');
             background-size: cover;
             background-position: center;
-            background-attachment: fixed; /* تأثير Parallax بسيط */
+            background-attachment: fixed;
         }
         #hero::before {
             content: '';
@@ -157,7 +157,6 @@
             transform: translateY(-4px);
             box-shadow: 0 8px 25px rgba(96, 165, 250, 0.3);
         }
-        /* --- جديد: تأثيرات ظهور عند التمرير --- */
         .fade-in-section {
             opacity: 0;
             transform: translateY(30px);
@@ -167,7 +166,6 @@
             opacity: 1;
             transform: translateY(0);
         }
-        /* --- جديد: زر العودة للأعلى --- */
         #scroll-to-top {
             position: fixed;
             bottom: 20px;
@@ -190,7 +188,6 @@
             opacity: 1;
             transform: translateY(0);
         }
-        /* --- CSS لفلترة المشاريع --- */
         .filter-btn {
             background-color: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.2);
@@ -212,12 +209,12 @@
 </head>
 <body class="bg-gray-900 text-gray-200">
     
-    <!-- جديد: شاشة التحميل -->
+    <!-- شاشة التحميل -->
     <div id="loader">
         <div class="spinner"></div>
     </div>
 
-    <!-- جديد: مؤشر الفأرة المخصص -->
+    <!-- مؤشر الفأرة المخصص -->
     <div class="cursor"></div>
     <div class="cursor-dot"></div>
 
@@ -230,7 +227,8 @@
     <!-- Header -->
     <header class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 glass-card">
         <div class="container mx-auto px-6 py-3 flex justify-between items-center">
-            <img src="https://placehold.co/150x50/121212/e5e5e5?text=CreaVateX" alt="شعار CreavateX" class="h-12 w-auto">
+            <!-- تعديل: تم تغيير الشعار -->
+            <img src="https://i.postimg.cc/5NqhJMR4/crevatex2-bw.png" alt="شعار CreavateX" class="h-12 w-auto">
             <nav class="hidden md:flex space-x-8 space-x-reverse">
                 <a href="#hero" class="hover:text-blue-400 transition-colors">الرئيسية</a>
                 <a href="#about" class="hover:text-blue-400 transition-colors">عن الشركة</a>
@@ -275,7 +273,8 @@
                 </div>
                 <div class="flex flex-col md:flex-row items-center gap-12">
                     <div class="md:w-1/3 text-center">
-                        <img src="https://placehold.co/250x250/121212/3b82f6?text=Logo" 
+                        <!-- تعديل: تم تغيير الشعار -->
+                        <img src="https://i.postimg.cc/5NqhJMR4/crevatex2-bw.png" 
                              alt="شعار شركة CreavateX" 
                              class="max-w-xs mx-auto p-4">
                     </div>
@@ -304,12 +303,12 @@
                 <div class="text-center mb-16">
                     <h2 class="text-4xl font-bold text-white">المشاريع المميزة</h2>
                     <div class="w-24 h-1 bg-blue-500 mx-auto mt-4 rounded"></div>
-                    <!-- جديد: أزرار فلترة المشاريع -->
+                    <!-- تعديل: تم تحديث أزرار الفلترة -->
                     <div id="project-filters" class="flex justify-center flex-wrap gap-4 mt-8">
                         <button class="filter-btn active" data-filter="all">الكل</button>
-                        <button class="filter-btn" data-filter="app">تطبيقات ويب</button>
-                        <button class="filter-btn" data-filter="e-commerce">تجارة إلكترونية</button>
-                        <button class="filter-btn" data-filter="game">ألعاب</button>
+                        <button class="filter-btn" data-filter="ecommerce">متاجر إلكترونية</button>
+                        <button class="filter-btn" data-filter="management">أنظمة إدارة</button>
+                        <button class="filter-btn" data-filter="portfolio">مواقع تعريفية</button>
                     </div>
                 </div>
                 <div id="projects-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -345,7 +344,7 @@
         </section>
     </main>
 
-    <!-- جديد: زر العودة للأعلى -->
+    <!-- زر العودة للأعلى -->
     <a id="scroll-to-top" href="#hero">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
@@ -376,52 +375,44 @@
     const mobileMenu = document.getElementById('mobile-menu');
     document.getElementById('year').textContent = new Date().getFullYear();
 
-    // --- بيانات المشاريع (مع فئات للفلترة) ---
+    // --- تعديل: تم تحديث بيانات وفئات المشاريع ---
     const projectsData = [
         {
             id: 1,
-            title: 'منصة الإدارة إلكترونية',
-            category: 'e-commerce',
-            description: 'منصة متكاملة لعرض وبيع المنتجات عبر الإنترنت مع لوحة تحكم.',
+            title: 'منصة إدارة إلكترونية',
+            category: 'management',
+            description: 'منصة متكاملة لإدارة مشروعك مع لوحة تحكم.',
             url: '#',
-            imageUrl: 'https://images.unsplash.com/photo-1557821552-17105176677c?q=80&w=1932&auto=format&fit=crop'
+            imageUrl: 'https://techorchard.com/wp-content/uploads/2021/09/TO_ModernManagement_092321.jpg'
         },
         {
             id: 2,
             title: 'تطبيق بيع أجهزة منزلية',
-            category: 'app',
+            category: 'ecommerce',
             description: 'تطبيق مرن ومتطور لبيع المنتجات المنزلية بطريقة تسويقية عصرية وسهلة لزيادة المبيعات.',
             url: '#',
             imageUrl: 'https://images.unsplash.com/photo-1571175443880-49e1d25b2dcb?q=80&w=1770&auto=format&fit=crop'
         },
         {
             id: 3,
-            title: 'تطبيق إعلاني للمدرسين',
-            category: 'app',
-            description: 'تطبيق ويب يبين قوة المدرب أو الأستاذ بطريقة جذابة حديثة.',
+            title: 'موقع إعلاني للمدرسين',
+            category: 'portfolio',
+            description: 'موقع ويب يعرض خدمات المدرب أو الأستاذ بطريقة جذابة وحديثة.',
             url: '#',
             imageUrl: 'https://images.unsplash.com/photo-1588693951525-2BC3d2747ae2?q=80&w=1770&auto=format&fit=crop'
         },
         {
             id: 4,
             title: 'موقع حجوزات فندقية',
-            category: 'e-commerce',
+            category: 'ecommerce',
             description: 'منصة تتيح للمستخدمين البحث عن الفنادق وحجز الغرف بسهولة.',
             url: '#',
             imageUrl: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=1740&auto=format&fit=crop'
         },
         {
             id: 5,
-            title: 'لعبة ويب تفاعلية',
-            category: 'game',
-            description: 'لعبة ألغاز مبنية على الويب باستخدام HTML5 Canvas وJavaScript.',
-            url: '#',
-            imageUrl: 'https://images.unsplash.com/photo-1593305842334-ce82d43a6962?q=80&w=1770&auto=format&fit=crop'
-        },
-        {
-            id: 6,
             title: 'متجر لبيع السيارات',
-            category: 'app',
+            category: 'ecommerce',
             description: 'تطبيق بسيط وجذاب يعرض أنواع السيارات ويعرضهم بطريقة جذابة.',
             url: '#',
             imageUrl: 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
@@ -436,7 +427,7 @@
         filteredProjects.forEach(project => {
             const card = document.createElement('div');
             card.className = 'glass-card project-card rounded-lg overflow-hidden shadow-lg';
-            card.dataset.projectId = project.id; // لربط البطاقة بالمجسم
+            card.dataset.projectId = project.id; 
             card.innerHTML = `
                 <a href="${project.url}" target="_blank" rel="noopener noreferrer">
                     <img src="${project.imageUrl}" alt="${project.title}" class="w-full h-48 object-cover">
@@ -470,9 +461,8 @@
     let INTERSECTED;
     const baseEmissive = 0x111111; 
     const hoverEmissive = 0x777777;
-    const scrollEmissive = 0x333333; // تم تقليل قيمة التوهج قليلاً
+    const scrollEmissive = 0x333333;
     
-    // --- جديد: متغيرات الحالة للتمرير والتحويم ---
     let isScrolling = false;
     let scrollTimeout;
 
@@ -542,16 +532,14 @@
         });
     }
     
-    // --- تعديل: دالة التمرير الآن تدير الحالة فقط ---
     function onPageScroll() {
         isScrolling = true;
         clearTimeout(scrollTimeout);
         scrollTimeout = setTimeout(() => {
             isScrolling = false;
-        }, 300); // زيادة المدة قليلاً ليبقى التأثير أطول
+        }, 300); 
     }
 
-    // --- تعديل: حلقة التحديث هي المصدر الوحيد لتغيير الألوان ---
     function animate() {
         requestAnimationFrame(animate);
         controls.update();
@@ -559,7 +547,6 @@
         projectMeshes.forEach(mesh => {
             let targetEmissive;
             
-            // تحديد اللون المستهدف بناءً على الحالة
             if (mesh === INTERSECTED) {
                 targetEmissive = hoverEmissive;
             } else if (isScrolling) {
@@ -568,10 +555,8 @@
                 targetEmissive = baseEmissive;
             }
             
-            // الانتقال السلس للون
             mesh.material.emissive.lerp(new THREE.Color(targetEmissive), 0.1);
 
-            // استمرار الدوران إذا لم يكن تحت التحويم
             if (mesh !== INTERSECTED) {
                 mesh.rotation.x += 0.001;
                 mesh.rotation.y += 0.002;
@@ -601,14 +586,12 @@
         }
     }
 
-    // --- تعديل: هذه الدالة تدير الآن الحجم والتلميح فقط ---
     function updateInteraction() {
         raycaster.setFromCamera(mouse, camera);
         const intersects = raycaster.intersectObjects(projectMeshes.filter(m => m.visible));
         const newIntersected = intersects.length > 0 ? intersects[0].object : null;
 
         if (newIntersected !== INTERSECTED) {
-            // إعادة تعيين حجم العنصر السابق إذا كان موجودًا
             if (INTERSECTED) {
                 INTERSECTED.scale.set(1, 1, 1);
             }
@@ -616,25 +599,20 @@
             INTERSECTED = newIntersected;
 
             if (INTERSECTED) {
-                // تحديث حجم العنصر الجديد وإظهار التلميح
                 INTERSECTED.scale.set(1.2, 1.2, 1.2);
                 tooltip.style.display = 'block';
                 tooltip.textContent = INTERSECTED.userData.title;
             } else {
-                // إخفاء التلميح عند عدم وجود تقاطع
                 tooltip.style.display = 'none';
             }
         }
     }
-    
-    // --- تم إزالة دالة resetIntersected لأن منطقها دُمج في animate و updateInteraction ---
 
     // --- منطق واجهة المستخدم الإضافي ---
     const cursor = document.querySelector('.cursor');
     const cursorDot = document.querySelector('.cursor-dot');
     const scrollToTopBtn = document.getElementById('scroll-to-top');
 
-    // حركة مؤشر الفأرة
     window.addEventListener('mousemove', e => {
         cursor.style.left = e.clientX + 'px';
         cursor.style.top = e.clientY + 'px';
@@ -655,7 +633,6 @@
         });
     });
 
-    // إظهار وإخفاء زر العودة للأعلى
     window.addEventListener('scroll', () => {
         if (window.scrollY > 300) {
             scrollToTopBtn.classList.add('visible');
@@ -664,7 +641,6 @@
         }
     });
 
-    // تأثير ظهور الأقسام عند التمرير
     const sections = document.querySelectorAll('.fade-in-section');
     const sectionObserver = new IntersectionObserver((entries, observer) => {
         entries.forEach(entry => {
@@ -676,7 +652,6 @@
     }, { threshold: 0.1 });
     sections.forEach(section => sectionObserver.observe(section));
     
-    // ربط بطاقات المشاريع بالمجسمات ثلاثية الأبعاد
     document.getElementById('projects-grid').addEventListener('mouseover', e => {
         const card = e.target.closest('.project-card');
         if (card) {
@@ -684,14 +659,12 @@
             const targetMesh = projectMeshes.find(m => m.userData.id === projectId);
             if (targetMesh && targetMesh.visible) {
                  if (INTERSECTED != targetMesh) {
-                    // لا حاجة لتغيير اللون هنا، حلقة التحديث ستتعامل مع الأمر
-                    // INTERSECTED = targetMesh; // سيتم تحديثه بواسطة updateInteraction
+                    // The animate loop handles the visual change
                  }
             }
         }
     });
 
-    // قائمة الموبايل
     menuBtn.addEventListener('click', () => {
         mobileMenu.classList.toggle('hidden');
         mobileMenu.classList.toggle('flex');
@@ -706,7 +679,6 @@
         });
     });
     
-    // نموذج الاتصال
     contactForm.addEventListener('submit', function(e) {
         e.preventDefault();
         const whatsappNumber = '+963962967893'; // Replace with your number
