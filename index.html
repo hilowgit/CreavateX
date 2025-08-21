@@ -380,7 +380,7 @@
     const projectsData = [
         {
             id: 1,
-            title: 'منصة تجارة إلكترونية',
+            title: 'منصة الإدارة إلكترونية',
             category: 'e-commerce',
             description: 'منصة متكاملة لعرض وبيع المنتجات عبر الإنترنت مع لوحة تحكم.',
             url: '#',
@@ -468,6 +468,13 @@
     let raycaster, mouse;
     let projectMeshes = [];
     let INTERSECTED;
+    const baseEmissive = 0x111111; 
+    const hoverEmissive = 0x777777;
+    const scrollEmissive = 0x333333; // تم تقليل قيمة التوهج قليلاً
+    
+    // --- جديد: متغيرات الحالة للتمرير والتحويم ---
+    let isScrolling = false;
+    let scrollTimeout;
 
     function initThreeJS() {
         scene = new THREE.Scene();
@@ -496,13 +503,18 @@
         const geometries = [
             new THREE.IcosahedronGeometry(2, 0), new THREE.TorusKnotGeometry(1.8, 0.6, 100, 16),
             new THREE.OctahedronGeometry(2.2, 0), new THREE.DodecahedronGeometry(2.1, 0),
-            new THREE.TorusGeometry(2, 0.5, 16, 100), new THREE.CylinderGeometry(1.5, 1.5, 3, 32) // FIX: Replaced CapsuleGeometry
+            new THREE.TorusGeometry(2, 0.5, 16, 100), new THREE.CylinderGeometry(1.5, 1.5, 3, 32)
         ];
 
         projectsData.forEach((project, index) => {
             const material = new THREE.MeshStandardMaterial({
-                color: 0xffffff, metalness: 0.7, roughness: 0.3,
-                flatShading: true, transparent: true, opacity: 0.8
+                color: 0xffffff, 
+                metalness: 0.7, 
+                roughness: 0.3,
+                flatShading: true, 
+                transparent: true, 
+                opacity: 0.8,
+                emissive: baseEmissive
             });
             const geometry = geometries[index % geometries.length];
             const mesh = new THREE.Mesh(geometry, material);
@@ -520,25 +532,52 @@
         window.addEventListener('resize', onWindowResize, false);
         document.addEventListener('mousemove', onMouseMove, false);
         window.addEventListener('click', onMouseClick, false);
+        window.addEventListener('scroll', onPageScroll, false);
     }
 
-    // جديد: دالة لفلترة مجسمات Three.js
     function filterThreeJSObjects(filter) {
         projectMeshes.forEach(mesh => {
             const isVisible = (filter === 'all' || mesh.userData.category === filter);
             mesh.visible = isVisible;
         });
     }
+    
+    // --- تعديل: دالة التمرير الآن تدير الحالة فقط ---
+    function onPageScroll() {
+        isScrolling = true;
+        clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(() => {
+            isScrolling = false;
+        }, 300); // زيادة المدة قليلاً ليبقى التأثير أطول
+    }
 
+    // --- تعديل: حلقة التحديث هي المصدر الوحيد لتغيير الألوان ---
     function animate() {
         requestAnimationFrame(animate);
         controls.update();
+
         projectMeshes.forEach(mesh => {
+            let targetEmissive;
+            
+            // تحديد اللون المستهدف بناءً على الحالة
+            if (mesh === INTERSECTED) {
+                targetEmissive = hoverEmissive;
+            } else if (isScrolling) {
+                targetEmissive = scrollEmissive;
+            } else {
+                targetEmissive = baseEmissive;
+            }
+            
+            // الانتقال السلس للون
+            mesh.material.emissive.lerp(new THREE.Color(targetEmissive), 0.1);
+
+            // استمرار الدوران إذا لم يكن تحت التحويم
             if (mesh !== INTERSECTED) {
                 mesh.rotation.x += 0.001;
                 mesh.rotation.y += 0.002;
             }
         });
+
         updateInteraction();
         renderer.render(scene, camera);
     }
@@ -562,32 +601,33 @@
         }
     }
 
+    // --- تعديل: هذه الدالة تدير الآن الحجم والتلميح فقط ---
     function updateInteraction() {
         raycaster.setFromCamera(mouse, camera);
         const intersects = raycaster.intersectObjects(projectMeshes.filter(m => m.visible));
+        const newIntersected = intersects.length > 0 ? intersects[0].object : null;
 
-        if (intersects.length > 0) {
-            if (INTERSECTED != intersects[0].object) {
-                resetIntersected();
-                INTERSECTED = intersects[0].object;
-                INTERSECTED.material.emissive.setHex(0x555555);
+        if (newIntersected !== INTERSECTED) {
+            // إعادة تعيين حجم العنصر السابق إذا كان موجودًا
+            if (INTERSECTED) {
+                INTERSECTED.scale.set(1, 1, 1);
+            }
+
+            INTERSECTED = newIntersected;
+
+            if (INTERSECTED) {
+                // تحديث حجم العنصر الجديد وإظهار التلميح
                 INTERSECTED.scale.set(1.2, 1.2, 1.2);
                 tooltip.style.display = 'block';
                 tooltip.textContent = INTERSECTED.userData.title;
+            } else {
+                // إخفاء التلميح عند عدم وجود تقاطع
+                tooltip.style.display = 'none';
             }
-        } else {
-            resetIntersected();
         }
     }
     
-    function resetIntersected() {
-        if (INTERSECTED) {
-            INTERSECTED.material.emissive.setHex(0x000000);
-            INTERSECTED.scale.set(1, 1, 1);
-        }
-        INTERSECTED = null;
-        tooltip.style.display = 'none';
-    }
+    // --- تم إزالة دالة resetIntersected لأن منطقها دُمج في animate و updateInteraction ---
 
     // --- منطق واجهة المستخدم الإضافي ---
     const cursor = document.querySelector('.cursor');
@@ -644,10 +684,8 @@
             const targetMesh = projectMeshes.find(m => m.userData.id === projectId);
             if (targetMesh && targetMesh.visible) {
                  if (INTERSECTED != targetMesh) {
-                    resetIntersected();
-                    INTERSECTED = targetMesh;
-                    INTERSECTED.material.emissive.setHex(0x555555);
-                    INTERSECTED.scale.set(1.2, 1.2, 1.2);
+                    // لا حاجة لتغيير اللون هنا، حلقة التحديث ستتعامل مع الأمر
+                    // INTERSECTED = targetMesh; // سيتم تحديثه بواسطة updateInteraction
                  }
             }
         }
@@ -671,7 +709,7 @@
     // نموذج الاتصال
     contactForm.addEventListener('submit', function(e) {
         e.preventDefault();
-        const whatsappNumber = '966500000000'; // Replace with your number
+        const whatsappNumber = '+963962967893'; // Replace with your number
         const name = document.getElementById('name').value;
         const message = document.getElementById('message').value;
         const fullMessage = `*رسالة جديدة من الموقع:*\n\n*الاسم:* ${name}\n*الرسالة:* ${message}`;
