@@ -1,0 +1,231 @@
+/* --- CSS مخصص لتكامل أفضل وتفاعلية محسنة --- */
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Cairo', sans-serif;
+    background-color: #121212;
+    color: #e5e5e5;
+    overflow-x: hidden;
+}
+
+/* --- شاشة التحميل --- */
+#loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #121212;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    transition: opacity 0.5s ease;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid rgba(255, 255, 255, 0.2);
+    border-top-color: #3b82f6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* --- مؤشر فأرة مخصص --- */
+.cursor {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #3b82f6;
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: width 0.2s, height 0.2s, background-color 0.2s;
+    display: none;
+}
+
+.cursor-dot {
+    width: 4px;
+    height: 4px;
+    background-color: #3b82f6;
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+    display: none;
+}
+
+/* --- التحكم في ظهور المؤشر حسب الجهاز --- */
+@media (hover: hover) and (pointer: fine) {
+    body {
+        cursor: none;
+    }
+    .cursor, .cursor-dot {
+        display: block;
+    }
+}
+
+#interactive-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    outline: none;
+    z-index: 0;
+}
+
+#hero {
+    position: relative;
+    background-image: url('https://images.unsplash.com/photo-1531297484001-80022131f5a1?q=80&w=1740&auto=format&fit=crop');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+
+#hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: linear-gradient(to top, rgba(18, 18, 18, 1), rgba(18, 18, 18, 0.6));
+    z-index: 1;
+}
+
+#hero .relative {
+    z-index: 2;
+}
+
+.content-section {
+    position: relative;
+    z-index: 1;
+    background: #121212;
+}
+
+.glass-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.glass-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+#tooltip {
+    position: fixed;
+    display: none;
+    padding: 8px 16px;
+    background: rgba(22, 22, 22, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: #fafafa;
+    pointer-events: none;
+    font-size: 14px;
+    z-index: 9999;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.skill-badge {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.skill-badge:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(96, 165, 250, 0.3);
+}
+
+.fade-in-section {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.fade-in-section.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+#scroll-to-top {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    background-color: #3b82f6;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 1000;
+    opacity: 0;
+    transform: translateY(100px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+#scroll-to-top.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.filter-btn {
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #e5e5e5;
+    padding: 8px 20px;
+    border-radius: 9999px;
+    transition: all 0.3s ease;
+}
+
+.filter-btn:hover {
+    background-color: rgba(59, 130, 246, 0.5);
+    border-color: #3b82f6;
+}
+
+.filter-btn.active {
+    background-color: #3b82f6;
+    color: white;
+    font-weight: bold;
+}
+
+/* --- أنماط النافذة المنبثقة --- */
+#construction-modal {
+    transition: opacity 0.3s ease-in-out;
+}
+
+#construction-modal > div {
+    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+}
+
+#construction-modal.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+#construction-modal.visible > div {
+    transform: scale(1);
+    opacity: 1;
+}
+
+@keyframes wrench-swing {
+    0%, 100% { transform: rotate(-15deg); }
+    50% { transform: rotate(15deg); }
+}
+
+.animated-icon svg {
+    animation: wrench-swing 2s ease-in-out infinite;
+}
